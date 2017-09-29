@@ -6,8 +6,11 @@ import crimalcheck from '@/components/crimalcheck/crimalcheck'
 import toolcheck from '@/components/toolcheck/toolcheck'
 import outregister from '@/components/outregister/outregister'
 import position from '@/components/position/position'
+import positionShow from '@/components/position/positionShow'
 import mutualsupervision from '@/components/mutualsupervision/mutualsupervision'
 import cardbind from '@/components/cardbind/cardbind'
+import cardUnBind from '@/components/cardbind/cardUnBind'
+
 
 Vue.use(Router)
 
@@ -50,6 +53,12 @@ export default new Router({
       component: position
     },
     {
+      // 人员分布
+      path: '/positionShow',
+      name: 'positionShow',
+      component: positionShow
+    },
+    {
       // 互监组
       path: '/mutualsupervision',
       name: 'mutualsupervision',
@@ -60,6 +69,12 @@ export default new Router({
       path: '/cardbind',
       name: 'cardbind',
       component: cardbind
+    },
+    {
+      // 卡解绑
+      path: '/cardUnBind',
+      name: 'cardUnBind',
+      component: cardUnBind
     }
   ]
 })

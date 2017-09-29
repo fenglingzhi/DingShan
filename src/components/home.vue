@@ -25,27 +25,48 @@
       <el-col :span="18">
         <div class="floating_personnel">
           <h4 class="home_title">流动人员
-            <span class="float">（非法流动{{FlnkIDList2.length}}人，</span>
+            <span class="float">（非法流动{{FlnkIDList2.length-FlnkIDList1.length}}人，</span>
             <span class="out">本监外出{{FlnkIDList1.length}}人）</span>
           </h4>
+          <!--<el-row class="float_person_wrap">-->
+            <!--<el-col :span="8" v-for="(item,index) in FlnkIDList2.slice(float_personnelA-1,float_personnelB)" :key='1' :class="">-->
+              <!--<div class="float_person_card illegal" :class="item.prisonstatus">-->
+                <!--<el-col :span="10" class="photo">-->
+                  <!--<img :src="item.Photo" alt="" width="100%" height="100%">-->
+                <!--</el-col>-->
+                <!--<el-col :span="12" class="crimal_content">-->
+                  <!--<p>姓名：{{item.CriminalName}}</p>-->
+                  <!--<p>罪犯编号：{{item.CriminalID}}</p>-->
+                  <!--&lt;!&ndash;<p>当前区域：{{item.area}}</p>&ndash;&gt;-->
+                  <!--&lt;!&ndash;<p>外出地点：{{item.destination}}</p>&ndash;&gt;-->
+                  <!--&lt;!&ndash;<p>陪同民警：{{item.withplace}}</p>&ndash;&gt;-->
+                  <!--<p>外出时间：{{item.UpdateTime}}</p>-->
+                  <!--&lt;!&ndash;<p>外出事由：{{item.outreasons}}</p>&ndash;&gt;-->
+                <!--</el-col>-->
+              <!--</div>-->
+            <!--</el-col>-->
+          <!--</el-row>-->
           <el-row class="float_person_wrap">
             <el-col :span="8" v-for="(item,index) in FlnkIDList2.slice(float_personnelA-1,float_personnelB)" :key='1' :class="">
-              <div class="float_person_card illegal" :class="item.prisonstatus">
+              <!--<div class="float_person_card illegal" :class="item.prisonstatus">-->
+              <div :class="['float_person_card illegal', {moveBlue: item.isBlue}]" >
                 <el-col :span="10" class="photo">
                   <img :src="item.Photo" alt="" width="100%" height="100%">
                 </el-col>
                 <el-col :span="12" class="crimal_content">
                   <p>姓名：{{item.CriminalName}}</p>
                   <p>罪犯编号：{{item.CriminalID}}</p>
-                  <!--<p>当前区域：{{item.area}}</p>-->
-                  <!--<p>外出地点：{{item.destination}}</p>-->
-                  <!--<p>陪同民警：{{item.withplace}}</p>-->
-                  <p>外出时间：{{item.UpdateTime}}</p>
+                  <p>当前区域：{{item.AreaName}}</p>
+                  <p v-show="item.isBlue">前往区域：{{item.Areas}}</p>
+                  <p  v-show="item.isBlue">陪同民警：{{item.Polices}}</p>
+                  <p>外出时间：{{item.LeaveTime}}</p>
+                  <p>状态：{{item.Status}}</p>
                   <!--<p>外出事由：{{item.outreasons}}</p>-->
                 </el-col>
               </div>
             </el-col>
           </el-row>
+
           <el-row >
             <el-col :span="8" style="height: 10px"></el-col>
             <el-col :span="8" >
@@ -135,6 +156,13 @@ export default {
           orient: 'horizontal',
           top: '0%',
           data: vm.chartsDatasName
+//          data:[
+//            {value:335, name:'直接访问'},
+//            {value:310, name:'邮件营销'},
+//            {value:234, name:'联盟广告'},
+//            {value:135, name:'视频广告'},
+//            {value:1548, name:'搜索引擎'}
+//          ]
         },
         tooltip : {
           trigger: 'item',
@@ -148,8 +176,8 @@ export default {
           color: ['#98c93c', '#22b9d6', '#f9a61a', '#cf445b','#AF89D6','#59ADF3'],
           label: {
             normal: {
-              position: 'outer',
-              formatter: '{d}%',
+              position: 'inside',
+              formatter: '{b} :{c}人',
               textStyle: {
                 color: '#333',
                 fontWeight: 'bold',
@@ -168,6 +196,13 @@ export default {
             }
           },
           data: vm.chartsDatas
+//          data:[
+//            {value:335, name:'直接访问'},
+//            {value:310, name:'邮件营销'},
+//            {value:234, name:'联盟广告'},
+//            {value:135, name:'视频广告'},
+//            {value:1548, name:'搜索引擎'}
+//          ]
         }]
       };
       myCharts.setOption(option)
@@ -215,6 +250,7 @@ export default {
   mounted(){
     var vm = this
     setInterval(function () {
+
       if(vm.chartsChange !== vm.chartsDatas){
         vm.charts()
       }
@@ -322,7 +358,7 @@ export default {
           font-size: 12px;
           text-align: left;
           margin-left: 10px;
-          overflow: hidden;
+          /*overflow: hidden;*/
           p{
             margin: 0;
             line-height: 22px;

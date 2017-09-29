@@ -193,11 +193,21 @@
 
       },
       cancle:function (index) {
-        var r=confirm("确定要删除该人员？");
-        if (r==true)
-        {
-           this.cardPerson.splice(index,1)
-        }
+//        var r=confirm("确定要删除该人员？");
+//        if (r==true)
+//        {
+//           this.cardPerson.splice(index,1)
+//        }
+
+        this.$confirm('确定要删除该人员?', '提示', {
+          confirmButtonText: '删除',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.cardPerson.splice(index,1)
+        }).catch(() => {
+
+        });
 
       },
       submit:function () {

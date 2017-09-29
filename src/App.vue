@@ -33,6 +33,7 @@
       :chartsDatasName="chartsDatasName"
       :crimalCount_outCrimalCount="crimalCount_outCrimalCount"
       :policeList="policeList"
+      :movePeople="movePeople"
       :receiveDataMsgType25="receiveDataMsgType25"
       :receiveDataMsgType30="receiveDataMsgType30"
       :receiveDataMsgType32="receiveDataMsgType32"
@@ -49,8 +50,10 @@
       :mapList="mapList"
       :chest_card="chest_card"
       :wristband="wristband"
+      :allMapList="allMapList"
 
     ></router-view>
+
 
     <menufooter
       @routerTip="routerTip"
@@ -100,6 +103,8 @@
                   </el-row>
                 </div>
                 <div v-show="false" id="alarmRecordID">{{alarm.AlarmRecordID}}</div>
+                <div v-show="false" id="alarmAreaID">{{alarm.AreaID}}</div>
+
                 <div  v-show="isPerson">
                   <div style="height:18px;"></div>
                   <el-row>
@@ -258,7 +263,7 @@
     <!--已点工具 end-->
 
     <!--报警弹框 star-->
-    <div class="alertAlarm" v-show="alertBJTK"  v-on:click="alertAlarm()">
+    <div class="alertAlarm " v-show="alertBJTK"  v-on:click="alertAlarm()">
       <div class="alarmImg">
         <img class="alarmIco" src='./assets/a1.png' alt="">
 
@@ -320,7 +325,7 @@
 <script>
   import navheader from './components/navheader.vue'                  // 引入组件头部导航
   import menufooter from './components/menufooter.vue'                // 引入组件底部菜单
-  import { BasicUrl,IMG,ReceiveAjaxUrl } from './config'
+  import { BasicUrl,IMG,ReceiveAjaxUrl,MapUrl,ajaxUrl } from './config'
   import global from './plugins/vue.global.js'
   import { ajax } from './assets/ajaxWebApiMethod'
 
@@ -340,6 +345,7 @@
         OrgID:'',                         //监区ID
         flowPerson_outPrison:{},          //流动人员 && 外监进入人员
         personnel_distribution:{},        //人员分布
+        movePeople:[],                    //人员流动总集合
         FlnkIDList_1 : [],                //外出人数（监内）ID
         FlnkIDList_11: [],
         FlnkIDList_2 : [],                //非法流动ID
@@ -386,7 +392,6 @@
 
 
 
-
         cardPerson:[],//互监组刷卡区域成员
         toolList:[],// 工具基础信息集合
         GetCriminalCalledList:[],//已点罪犯
@@ -421,7 +426,8 @@
         isPerson:true,                     //报警类别：人
         isGrup:false,                      //报警类别：互监组
         canRouter:1,                      //流动路由判
-        criminalList:[]                   //罪犯基础信息集合
+        criminalList:[],                   //罪犯基础信息集合
+        allMapList:[]                       //区域结合，用于人员分布左侧地图渲染
       }
     },
     methods: {
@@ -453,6 +459,23 @@
             vm.setLocalStorage('DoorID',vm.prisonSelect[0].Door)
             vm.setLocalStorage('AreaID',vm.prisonSelect[0].AreaID)
             vm.setLocalStorage('AreaType',vm.prisonSelect[0].AreaType)
+            vm.setLocalStorage('MapFlnkID',vm.prisonSelect[0].MapFlnkID)
+//            /*保存所有监区信息，人员分布渲染左侧地图用*/
+//            var allMapList = result;
+//            for (let i=0;i<allMapList.length;i++){
+//                allMapList[i].MapUrl=MapUrl+vm.mapList[0][allMapList[i].MapFlnkID].MapUrl
+//                if(i==0){
+//                  allMapList[i].status=true
+//                }else {
+//                  allMapList[i].status=false
+//
+//                }
+//                console.log(allMapList)
+//            }
+//            vm.allMapList=allMapList
+//            console.log(vm.allMapList)
+
+
           },
           error: function (err) {
             console.log(err)
@@ -479,10 +502,11 @@
             CriminalID:vm.criminalList[0][vm.FlnkIDList_2[j]].CriminalID,
             CriminalName:vm.criminalList[0][vm.FlnkIDList_2[j]].CriminalName,
             Photo:vm.criminalList[0][vm.FlnkIDList_2[j]].Photo,
-            UpdateTime:vm.criminalList[0][vm.FlnkIDList_2[j]].UpdateTime,
           }
         }
-        vm.FlnkIDList_22=vueDataPersonlist_2
+//        vm.FlnkIDList_22=vueDataPersonlist_2
+        vm.FlnkIDList_22=vm.movePeople
+
 
         /* 外监进入人员 -3 筛选后数据用于VUE渲染 */
         var vueDataPersonlist_3=[];
@@ -590,10 +614,20 @@
       /* 删除卡绑定人 */
       delCardSelect:function (index) {
         let vm = this
-        var r=confirm("是否删除此胸牌");
-        if (r==true){
+//        var r=confirm("是否删除此胸牌");
+//        if (r==true){
+//          vm.chest_card.splice(index, 1)
+//        }
+
+        this.$confirm('是否删除此胸牌?', '提示', {
+          confirmButtonText: '删除',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
           vm.chest_card.splice(index, 1)
-        }
+        }).catch(() => {
+
+        });
 
       },
 
@@ -630,6 +664,9 @@
       alarmHandle:function () {
         var vm = this
         var alarmRecordID = $("#alarmRecordID").html()
+        var alarmAreaID = $("#alarmAreaID").html()
+
+
         var alarmHandS = setInterval(function () {
           if(localStorage.getItem("placemanID")==0){
              vm.alertYHDL=true
@@ -657,8 +694,33 @@
                     vm.alertText=""
                   },2000)
                 }else {
+                  /*向网关发数据，停止设备鸣叫*/
+                  let sandStop  = {
+                    Header: {
+                      MsgID:"201501260000000035",
+                      MsgType:54
+                    },
+                    Body: JSON.stringify({
+                      EventID:alarmRecordID,
+                      AreaID:alarmAreaID,
+                      RET:"1"
+                    })
+                  }
+                  $.ajax({
+                    type: "get",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "jsonp",
+                    jsonp: "callback",
+                    async: false,
+                    url: ajaxUrl,
+                    data:JSON.stringify(sandStop),
+                    success: function (result) {
+                    },
+                    complete: function (XHR) {
+                      XHR = null;  //回收资源
+                    }
+                  });
                   /*页面删除效果*/
-
                   for(var j=0;j<vm.alarmList.length;j++){
                     if(vm.alarmList[j]["AlarmRecordID"]==alarmRecordID){
                       vm.alarmList.splice(j,1);
@@ -1224,37 +1286,38 @@
           }
         });
         /* 工具基础信息 */
-        $.ajax({
-          type: "get",
-          contentType: "application/json; charset=utf-8",
-          dataType: "jsonp",
-          jsonp: "callback",
-          async: false,
-          data: {OrgID: localStorage.getItem('OrgID')},
-          url:  BasicUrl+'ToolCnt/GetToolList' + "?callback=?",
-          success: function (result) {
+//        $.ajax({
+//          type: "get",
+//          contentType: "application/json; charset=utf-8",
+//          dataType: "jsonp",
+//          jsonp: "callback",
+//          async: false,
+//          data: {OrgID: localStorage.getItem('OrgID')},
+//          url:  BasicUrl+'ToolCnt/GetToolList' + "?callback=?",
+//          success: function (result) {
+//
+//            //所有罪犯信息缓存(哈希，便于快速查找缓存中的罪犯详细信息)
+//            var toolList_hash = new Array();
+//            // 重构工具信息哈希数据
+//            for(var i=0;i<result.length;i++){
+//              toolList_hash[result[i].FlnkID] = {
+//                FlnkID:result[i].FlnkID,
+//                ToolID:result[i].ToolID,
+//                ToolType:result[i].ToolType,
+//                ToolName:result[i].ToolName,
+//                IsInsideTool:result[i].IsInsideTool,
+//                Photo:IMG + result[i].Photo
+//              };
+//            }
+////            vm.toolList.push(toolList_hash)
+//            vm.toolList[0]=toolList_hash
+//
+//          },
+//          complete: function (XHR, TS) {
+//            XHR = null;  //回收资源
+//          }
+//        });
 
-            //所有罪犯信息缓存(哈希，便于快速查找缓存中的罪犯详细信息)
-            var toolList_hash = new Array();
-            // 重构工具信息哈希数据
-            for(var i=0;i<result.length;i++){
-              toolList_hash[result[i].FlnkID] = {
-                FlnkID:result[i].FlnkID,
-                ToolID:result[i].ToolID,
-                ToolType:result[i].ToolType,
-                ToolName:result[i].ToolName,
-                IsInsideTool:result[i].IsInsideTool,
-                Photo:IMG + result[i].Photo
-              };
-            }
-//            vm.toolList.push(toolList_hash)
-            vm.toolList[0]=toolList_hash
-
-          },
-          complete: function (XHR, TS) {
-            XHR = null;  //回收资源
-          }
-        });
 
         /* 全部警员信息 */
         $.ajax({
@@ -1311,9 +1374,7 @@
           async: false,
           url: BasicUrl + 'HomeIndex/GetMapList',
           success: function (result) {
-            //所有警员信息缓存(哈希，便于快速查找缓存中的罪犯详细信息)
             var map_hash = new Array();
-            // 重构警员信息哈希数据
             for(var i=0;i<result.length;i++){
               map_hash[result[i].FlnkID] = {
                 FlnkID:result[i].FlnkID,
@@ -1333,6 +1394,7 @@
               };
             }
             vm.mapList[0]=map_hash
+            console.log(map_hash)
           },
           complete: function (XHR) {
             XHR = null;  //回收资源
@@ -1344,6 +1406,8 @@
     mounted () {
 
       let vm = this
+      vm.allDataInit()
+
       vm.changeSize()
       window.aaa = this
       /* Coding By YanM */
@@ -1387,13 +1451,12 @@
           /* 保持心跳-参数-01 */
           vm.ws.send(JSON.stringify(keep_heart))
           /* 人员分布-参数-14 */
-          vm.ws.send(JSON.stringify(flowPerson_outPrison))
+//          vm.ws.send(JSON.stringify(flowPerson_outPrison))
           /* 流动人员 && 外监进入人员-参数-24 */
           vm.ws.send(JSON.stringify(personnel_distribution))
         },5000)
       };
 
-      vm.allDataInit()
 
       /* websocket接收信息 */
       vm.ws.onmessage=function(event) {
@@ -1488,11 +1551,12 @@
             criminalData.criminalID = vm.criminalList[0][alarmNews.ObjectID].CriminalID
             criminalData.Photo = vm.criminalList[0][alarmNews.ObjectID].Photo
             vm.alarmList.unshift(criminalData)
+
           /*限制报警条数不超过99*/
             vm.alarmList.splice(99,99999999999)
             vm.alarmText =  vm.alarmList[0].Description
             vm.alarmPages = vm.alarmList.length
-            if (vm.alarmList.length != 0) {
+          if (vm.alarmList.length != 0) {
               vm.alertBJTK = true
             } else {
               vm.alertBJTK = false
@@ -1521,10 +1585,40 @@
         if(JSON.parse(event.data).Header.MsgType === 24){
           var  flowPerson_outPrison_rec = JSON.parse(JSON.parse(event.data).Body)
 
+
+//          // 1、外出人数（监内）
+//          vm.FlnkIDList_1.length = 0
+//          for (let i = 0; i<flowPerson_outPrison_rec[0].People.length; i++){
+//            vm.FlnkIDList_1.push(flowPerson_outPrison_rec[0].People[i].CriminalID)
+//          }
+//
+//          // 2、非法流动
+//          vm.FlnkIDList_2.length = 0
+//          for (let i = 0; i<flowPerson_outPrison_rec[1].People.length; i++){
+//            if(vm.FlnkIDList_2.length !== flowPerson_outPrison_rec[1].People.length){
+//              vm.FlnkIDList_2.push(flowPerson_outPrison_rec[1].People[i].CriminalID)
+//            }
+//          }
+
+          vm.movePeople=[]
           // 1、外出人数（监内）
           vm.FlnkIDList_1.length = 0
+          console.log(flowPerson_outPrison_rec)
           for (let i = 0; i<flowPerson_outPrison_rec[0].People.length; i++){
             vm.FlnkIDList_1.push(flowPerson_outPrison_rec[0].People[i].CriminalID)
+            let runPeople={};
+            //            runPeople.CriminalID=flowPerson_outPrison_rec[0].People[i].CriminalID
+            runPeople.AreaName=flowPerson_outPrison_rec[0].People[i].AreaName
+            runPeople.Areas=flowPerson_outPrison_rec[0].People[i].Areas
+            runPeople.LeaveTime=flowPerson_outPrison_rec[0].People[i].LeaveTime
+            runPeople.Polices=flowPerson_outPrison_rec[0].People[i].Polices
+            runPeople.Reason=flowPerson_outPrison_rec[0].People[i].Reason
+            runPeople.Status=flowPerson_outPrison_rec[0].People[i].Status
+            runPeople.CriminalID=vm.criminalList[0][flowPerson_outPrison_rec[0].People[i].CriminalID].CriminalID
+            runPeople.CriminalName=vm.criminalList[0][flowPerson_outPrison_rec[0].People[i].CriminalID].CriminalName
+            runPeople.Photo=vm.criminalList[0][flowPerson_outPrison_rec[0].People[i].CriminalID].Photo
+            runPeople.isBlue=true
+            vm.movePeople.push(runPeople)
           }
 
           // 2、非法流动
@@ -1533,7 +1627,21 @@
             if(vm.FlnkIDList_2.length !== flowPerson_outPrison_rec[1].People.length){
               vm.FlnkIDList_2.push(flowPerson_outPrison_rec[1].People[i].CriminalID)
             }
+            let runPeople={};
+//            runPeople.CriminalID=flowPerson_outPrison_rec[1].People[i].CriminalID
+            runPeople.AreaName=flowPerson_outPrison_rec[1].People[i].AreaName
+            runPeople.Areas=flowPerson_outPrison_rec[1].People[i].Areas
+            runPeople.LeaveTime=flowPerson_outPrison_rec[1].People[i].LeaveTime
+            runPeople.Polices=flowPerson_outPrison_rec[1].People[i].Polices
+            runPeople.Reason=flowPerson_outPrison_rec[1].People[i].Reason
+            runPeople.Status=flowPerson_outPrison_rec[1].People[i].Status
+            runPeople.CriminalID=vm.criminalList[0][flowPerson_outPrison_rec[1].People[i].CriminalID].CriminalID
+            runPeople.CriminalName=vm.criminalList[0][flowPerson_outPrison_rec[1].People[i].CriminalID].CriminalName
+            runPeople.Photo=vm.criminalList[0][flowPerson_outPrison_rec[1].People[i].CriminalID].Photo
+            runPeople.isBlue=false
+            vm.movePeople.push(runPeople)
           }
+//          console.log("dddddddddddddddddddddddddddddddddd",vm.movePeople)
 
           // 3、外监进入人员
           vm.FlnkIDList_3.length = 0
@@ -1606,6 +1714,8 @@
         if(JSON.parse(event.data).Header.MsgType === 51){
           var  chest_card = JSON.parse(JSON.parse(event.data).Body)
           var  wristband = JSON.parse(JSON.parse(event.data).Body)
+
+
           //判断是胸卡
           if(chest_card.CardType === 0){
             if(vm.chest_card.length ===0){
@@ -1613,6 +1723,7 @@
                 CardID:chest_card.CardID,
                 CardType:chest_card.CardType,
                 CriminalID:chest_card.CriminalID,
+                CriminalNum:vm.criminalList[0][chest_card.CriminalID].CriminalID,
                 status:false,
                 CriminalName:vm.criminalList[0][chest_card.CriminalID].CriminalName,
                 Photo:vm.criminalList[0][chest_card.CriminalID].Photo,
@@ -1715,12 +1826,14 @@
 
 
       /* Coding By Qianjf */
-
     }
   }
 </script>
 
 <style>
+  input,textarea:focus {
+    outline: none;
+  }
   .home{
     height: 780px !important;
   }
@@ -1837,7 +1950,7 @@
     width:100%;
     height: 50px;
     color: blue;
-    border: 1px solid;
+    border: 2px solid;
     font-size: 14px;
     text-align: center;
     line-height: 51px;
@@ -1924,9 +2037,9 @@
   .alertAlarm{
     width: 230px;
     height: 80px;
-    /*position: fixed;*/
-    /*bottom: 80px;*/
-    /*right: 34px;*/
+    position: fixed;
+    bottom: 80px;
+    right: 34px;
     position: absolute;
     background: rgb(255, 51, 51);
   }

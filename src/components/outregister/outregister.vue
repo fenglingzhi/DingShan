@@ -580,7 +580,7 @@
           localStorage.setItem("moveTypes","2")//1为进出工，2为临时外出登记，3为卡绑定
           vm.firstWs()
           clearInterval(outPlice)
-          console.log(vm.policeList)
+//          console.log(vm.policeList)
           var Polices={}
           Polices["PersonID"]=localStorage.getItem("placemanID")
           Polices["ischoose"]=false
@@ -701,7 +701,7 @@
               result[i]["ischoose"]=false
             }
             vm.reasonList=result
-             console.log(result)
+//             console.log(result)
           }
 
         },

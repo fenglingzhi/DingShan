@@ -10,7 +10,7 @@
         <div class="tab1">
           <div class="partsBody">
             <div class="bodyHead">
-              <div class="title">人员绑卡</div>
+              <div class="title">人员解绑</div>
             </div>
             <div class="bodyCon">
               <el-row >
@@ -23,7 +23,7 @@
                         <el-col :span="12" class="crimal_content">
                           <p>姓名：{{item.CriminalName}}</p>
                           <!--<p>罪犯编号：{{item.CriminalID}}</p>-->
-                          <p>番号：{{item.CriminalNum}}</p>
+                          <!--<p>番号：{{item.CriminalNum}}</p>-->
                           <p>胸牌编号：{{item.CardID}}</p>
                           <p>腕带编号：{{item.wristband}}</p>
                         </el-col>
@@ -51,9 +51,9 @@
             <div class="alertText">{{alertTip}}</div>
 
             <div style="margin: 11px 2px;float: right">
-              <input class="sureAble" value="提交"  type="button" @click="bandCardInfoSubmit()">
-              <!--<input class="sureAble" value="提交解绑" type="button" @click="bandCardInfoUnbind()">-->
-              <!--<input class="sureAble"  value="一键解绑" type="button" @click="bandCardUnbindAll()">-->
+              <!--<input class="sureAble" value="提交"  type="button" @click="bandCardInfoSubmit()"  >-->
+              <input class="sureAble" value="提交解绑" type="button" @click="bandCardInfoUnbind()" >
+              <input class="sureAble"  value="一键解绑" type="button" @click="bandCardUnbindAll()" >
               <input class="sureAble"  value="取消" type="button" @click="BindCancel()">
             </div>
           </div>
@@ -79,8 +79,8 @@
       return {
         isUnbind:false,
         CardTitle:'卡绑定',
-        isB1: true,
-        isB2: false,
+        isB1: false,
+        isB2: true,
         alertTip: ""
 
       }
@@ -213,7 +213,6 @@
           },
           complete: function (XHR) {
             XHR = null;  //回收资源
-            vm.delDisable()
           },
           error:function () {
             vm.delDisable()
@@ -386,8 +385,8 @@
            /* 点击登录框关闭按钮停止检测民警登录情况*/
           clearInterval(outPlice)
         }else{
-          localStorage.setItem("moveTypes","3")//1为进出工，2为临时外出登记，3为卡绑定
-          vm.bandCardInfo_onBind()
+          localStorage.setItem("moveTypes","4")//1为进出工，2为临时外出登记，3为卡绑定,4为卡解绑
+          vm.UnbandCardInfo_onUnBind()
           vm.$emit('CardBindPageInit')
           clearInterval(outPlice)
         }
@@ -402,6 +401,9 @@
 </script>
 
 <style lang="scss" scoped>
+  input,textarea:focus {
+    outline: none;
+  }
   .float_person_card{
     padding: 10px;
     height: 150px;
@@ -452,7 +454,7 @@
 
   .li4_parts .partsBody{
     width: 100%;
-    height: 702px;
+    height: 695px;
     background: white;
 
   }
@@ -522,8 +524,6 @@
     text-align: center;
   }
 
-  input,textarea:focus {
-    outline: none;
-  }
+
 
 </style>

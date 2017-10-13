@@ -24,7 +24,7 @@
                           <p>姓名：{{item.CriminalName}}</p>
                           <!--<p>罪犯编号：{{item.CriminalID}}</p>-->
                           <!--<p>番号：{{item.CriminalNum}}</p>-->
-                          <p>胸牌编号：{{item.CardID}}</p>
+                          <p>胸牌编号：{{item.RFID}}</p>
                           <p>腕带编号：{{item.wristband}}</p>
                         </el-col>
                       </div>
@@ -37,7 +37,7 @@
                         <el-col :span="12" class="crimal_content">
                           <p>姓名：{{item.CrimalName}}</p>
                           <!--<p>罪犯编号：{{item.CriminalID}}</p>-->
-                          <p>腕带编号：{{item.CardID}}</p>
+                          <p>腕带编号：{{item.RFID}}</p>
                         </el-col>
                       </div>
                     </el-col>
@@ -202,7 +202,7 @@
               setTimeout(function () {
                 vm.alertTip=""
                 vm.$router.push({ path: '/' })
-              },2000)
+              },1000)
             } else {
               /*alert('绑定失败')*/
               vm.alertTip="绑定失败"
@@ -266,61 +266,69 @@
       /* 提交解绑 */
       bandCardInfoUnbind:function () {
         let vm = this
-        vm.addDisable()
-        let UnBundingList = []
-        for(let i = 0; i<vm.wristband.length; i++){
-          UnBundingList.push({
-            CriminalID:vm.wristband[i].CriminalID,
-            WristCard:vm.wristband[i].CardID
-          })
-        }
-        var UnbandCardInfoSubmit = {
-          Header: {
-            MsgID:"201501260000000001",
-            MsgType:53,
-          },
-          Body: JSON.stringify({
-            DoorID : vm.getLocalStorage('DoorID'),
-            UnBundingList:UnBundingList
-          })
-        }
-        $.ajax({
-          type: "get",
-          contentType: "application/json; charset=utf-8",
-          dataType: "jsonp",
-          jsonp: "callback",
-          async: false,
-          url: ajaxUrl,
-          data:JSON.stringify(UnbandCardInfoSubmit),
-          success: function (result) {
-            vm.delDisable()
-
-            if(result.RET === 1){
-//              alert('解除绑定成功')
-              vm.alertTip="解除绑定成功"
-              localStorage.setItem("moveTypes","0")
-
-              setTimeout(function () {
-                vm.alertTip=""
-                vm.$router.push({ path: '/' })
-              },2000)
-
-            } else {
-//              alert('解除绑定失败')
-              vm.alertTip="解除绑定失败"
-              setTimeout(function () {
-                vm.alertTip=""
-              },2000)
-//              vm.$router.push({ path: '/' })
-            }
-          },
-          complete: function (XHR) {
-            XHR = null;  //回收资源
-          },
-          error:function () {
-            vm.delDisable()
+        if(vm.wristband.length==0){
+          vm.alertTip="无卡解绑"
+          setTimeout(function () {
+            vm.alertTip=""
+          },2000)
+        }else {
+          vm.addDisable()
+          let UnBundingList = []
+          for(let i = 0; i<vm.wristband.length; i++){
+            UnBundingList.push({
+              CriminalID:vm.wristband[i].CriminalID,
+              WristCard:vm.wristband[i].CardID
+            })
           }
-        });
+          var UnbandCardInfoSubmit = {
+            Header: {
+              MsgID:"201501260000000001",
+              MsgType:53,
+            },
+            Body: JSON.stringify({
+              DoorID : vm.getLocalStorage('DoorID'),
+              UnBundingList:UnBundingList
+            })
+          }
+          $.ajax({
+            type: "get",
+            contentType: "application/json; charset=utf-8",
+            dataType: "jsonp",
+            jsonp: "callback",
+            async: false,
+            url: ajaxUrl,
+            data:JSON.stringify(UnbandCardInfoSubmit),
+            success: function (result) {
+              vm.delDisable()
+
+              if(result.RET === 1){
+//              alert('解除绑定成功')
+                vm.alertTip="解除绑定成功"
+                localStorage.setItem("moveTypes","0")
+
+                setTimeout(function () {
+                  vm.alertTip=""
+                  vm.$router.push({ path: '/' })
+                },1000)
+
+              } else {
+//              alert('解除绑定失败')
+                vm.alertTip="解除绑定失败"
+                setTimeout(function () {
+                  vm.alertTip=""
+                },2000)
+//              vm.$router.push({ path: '/' })
+              }
+            },
+            complete: function (XHR) {
+              XHR = null;  //回收资源
+            },
+            error:function () {
+              vm.delDisable()
+            }
+          });
+        }
+
       },
       /* 一键解绑 */
       bandCardUnbindAll:function () {
@@ -352,7 +360,7 @@
               setTimeout(function () {
                 vm.alertTip=""
                 vm.$router.push({ path: '/' })
-              },2000)
+              },1000)
               localStorage.setItem("moveTypes","0")
 
 

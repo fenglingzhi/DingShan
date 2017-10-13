@@ -77,23 +77,48 @@
                   <div style="height:0px;"></div>
                   <el-row >
                     <el-row style="overflow: hidden;height: 632px;margin: 18px 4px;width:1025px;">
-                      <div class="map">
+                      <div class="map" v-on:click="closeTip()">
                         <img :src="positionMap" id="positionMap" width="" alt="" ref="abc">
                         <!--<img :src="mapPhoto" alt="" ref="abc">-->
-                        <div  v-for="(item,index) in criminalLists" :class="['point', {pointed: true}]"  v-on:click="select(index)"  :style="{top:item.CriminalY+'px',left:item.CriminalX+'px'}" >
+                        <div  v-for="(item,index) in criminalLists" :class="['point', {pointed: true}]"  @click.stop="select(index)"  :style="{top:item.CriminalY+'px',left:item.CriminalX+'px'}" >
                           <img :src="item.pointImg" alt="">
-                          <div class="pointTop" v-show="item.status" v-on:click="closeTip()">
+                          <div class="pointTop" v-show="item.status">
                             <el-col :span="10">
                               <img :src="item.CriminalPhoto" style="height: 140px;width: 100px;" alt="">
                             </el-col>
                             <el-col :span="14" style="text-align: left;line-height: 30px;">
                               姓名：{{item.Name}}<br/>
-                              番号：{{item.PSID}}<br/>
+                              番号：{{item.PersonID}}<br/>
                               监区：{{item.OrgName}}<br/>
-                              管理登记：{{item.ManageLevelName}}<br/>
+                              管理等级：{{item.ManageLevelName}}<br/>
                             </el-col>
                             <div style="width: 0px;height: 0px;border-left: 18px solid transparent;border-right: 16px solid transparent;border-top: 13px solid #022171;font-size: 0;line-height: 0;margin: 142px 42px;"></div>
                           </div>
+                        </div>
+
+
+                      <div class="personGroups" v-for="(item,index) in criminalGroups" :style="{top:item.CriminalY+'px',left:item.CriminalX+'px'}" @click.stop="selectGroups(index)" >
+                          {{item.posMenu.length}}
+                        <div style=" margin: -67px 37px;" v-show="item.status" >
+                          <div class="personGroup" v-for="(item,personIndex) in item.posMenu[0]" @click.stop="selectPerson(index,personIndex)">
+                            <div class="personName">
+                              {{item.Name}}
+                              <div class="pointTop" style="margin: -83px 158px;font-size: 16px" v-show="item.status">
+                                <el-col :span="10">
+                                  <img :src="item.CriminalPhoto" style="height: 140px;width: 100px;" alt="">
+                                </el-col>
+                                <el-col :span="14" style="text-align: left;line-height: 30px;">
+                                  姓名：{{item.Name}}<br/>
+                                  番号：{{item.PersonID}}<br/>
+                                  监区：{{item.OrgName}}<br/>
+                                  管理等级：{{item.ManageLevelName}}<br/>
+                                </el-col>
+                                <div style="width: 0px;height: 0px;border-left: 18px solid transparent;border-right: 16px solid transparent;border-top: 13px solid #022171;font-size: 0;line-height: 0;margin: 68px -20px;"></div>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
                         </div>
                       </div>
                     </el-row>
@@ -141,6 +166,8 @@
 
     data () {
       return {
+        criminalGroups:'',
+        ipImg:"",
         searchModeShow:false,
         seachNum:"",
         personBand:[],
@@ -169,7 +196,15 @@
           vm.criminalLists[i].status = false
         }
 
+        for(var i = 0; i<vm.criminalGroups.length; i++){
+          vm.criminalGroups[i].status = false
+          for(var j = 0; j<vm.criminalGroups[i].posMenu[0].length; j++){
+            vm.criminalGroups[i].posMenu[0][j].status = false
+          }
+
+        }
       },
+
       /*搜索罪犯*/
       searchSub:function () {
         let vm=this
@@ -201,13 +236,13 @@
               var ManageLevels=vm.personBand[0][result.PSID.toLowerCase()].ManageLevel
               var pointImg="";
               if(ManageLevels=="4201"){
-                pointImg="../../static/KG.png"
+                pointImg=vm.ipImg+"KG.png"
               }else if(ManageLevels=="4202"){
-                pointImg="../../static/PG.png"
+                pointImg=vm.ipImg+"PG.png"
               }else if(ManageLevels=="4203"){
-                pointImg="../../static/YG.png"
+                pointImg=vm.ipImg+"YG.png"
               }else if(ManageLevels=="4204"){
-                pointImg="../../static/KC.png"
+                pointImg=vm.ipImg+"KC.png"
               }
               vm.criminalLists.push({
                 PSID:result.PSID.toLowerCase(),
@@ -267,13 +302,13 @@
               var ManageLevels=vm.personBand[0][result.PSID.toLowerCase()].ManageLevel
               var pointImg="";
               if(ManageLevels=="4201"){
-                pointImg="../../static/KG.png"
+                pointImg=vm.ipImg+"KG.png"
               }else if(ManageLevels=="4202"){
-                pointImg="../../static/PG.png"
+                pointImg=vm.ipImg+"PG.png"
               }else if(ManageLevels=="4203"){
-                pointImg="../../static/YG.png"
+                pointImg=vm.ipImg+"YG.png"
               }else if(ManageLevels=="4204"){
-                pointImg="../../static/KC.png"
+                pointImg=vm.ipImg+"KC.png"
               }
 
               vm.criminalLists[0].Name=vm.personBand[0][result.PSID.toLowerCase()].Name
@@ -323,9 +358,23 @@
             }
           }
         }
+      },
+      /*选择重叠组*/
+      selectGroups:function (index) {
+        let vm = this
+        for(let i = 0; i<vm.criminalGroups.length; i++){
+          vm.criminalGroups[i].status = false
+        }
+        vm.criminalGroups[index].status = true
 
-
-
+      },
+      /*选择重叠组*/
+      selectPerson:function (index,personIndex) {
+        let vm = this
+        for(let i = 0; i<vm.criminalGroups[index].posMenu[0].length; i++){
+          vm.criminalGroups[index].posMenu[0][i].status = false
+        }
+        vm.criminalGroups[index].posMenu[0][personIndex].status = true
       },
       /*获取新的绑卡人基础数据*/
       getNewData:function () {
@@ -340,6 +389,7 @@
           data: {OrgID: localStorage.getItem('OrgID')},
           url:  BasicUrl+'/CriminalCnt/GetCardBindPersonList',
           success: function (result) {
+
             //所有罪犯信息缓存(哈希，便于快速查找缓存中的罪犯详细信息)
             var person_hash = new Array();
             for(var i=0;i<result.length;i++){
@@ -365,20 +415,20 @@
           },
           complete: function (XHR, TS) {
             XHR = null;  //回收资源
+
           }
         });
       },
 
       selectMap:function (index) {
         let vm = this
-        vm.pointS()
         for(let i = 0; i<vm.allMapLists.length; i++){
           vm.allMapLists[i].status = false
         }
         vm.allMapLists[index].status= true
         vm.positionMap=vm.allMapLists[index].MapUrl
         vm.MapID=vm.allMapLists[index].MapFlnkID
-
+        vm.pointS()
       },
       /*缩放地图*/
       changeSize:function (type) {
@@ -428,18 +478,17 @@
           url: ajaxUrl,
           data:JSON.stringify(sendMessage),
           success: function (result) {
-//         console.log(result)
             for (let i=0;i<result.length;i++){
                 var ManageLevels=vm.personBand[0][result[i].PSID.toLowerCase()].ManageLevel
               var pointImg="";
               if(ManageLevels=="4201"){
-                pointImg="../../static/KG.png"
+                pointImg=vm.ipImg+"KG.png"
               }else if(ManageLevels=="4202"){
-                pointImg="../../static/PG.png"
+                pointImg=vm.ipImg+"PG.png"
               }else if(ManageLevels=="4203"){
-                pointImg="../../static/YG.png"
+                pointImg=vm.ipImg+"YG.png"
               }else if(ManageLevels=="4204"){
-                pointImg="../../static/KC.png"
+                pointImg=vm.ipImg+"KC.png"
               }
 
               vm.criminalLists.push({
@@ -470,21 +519,87 @@
               }else if(vm.criminalLists[j].ManageLevel=="4204"){
                 KC.push(vm.criminalLists[j])
               }
+              vm.KGL=0
+              vm.YGL=0
+              vm.PGL=0
+              vm.KCL=0
               vm.KGL=KG.length
               vm.YGL=YG.length
               vm.PGL=PG.length
               vm.KCL=KC.length
             }
 
+
+            var positionData=vm.criminalLists
+            var mergePointOffset=0
+            var mergePointCollection = JSON.parse(JSON.stringify(positionData));
+            for (var i = 0; i < mergePointCollection.length; i++) {
+              var curDivPos = mergePointCollection[i];
+              if (curDivPos.isTotal == undefined) {
+                var divTotal = 1;
+                var posMenu = [];
+                for (var j = i; j < mergePointCollection.length; j++) {
+                  if (mergePointCollection[j].isTotal == undefined && mergePointCollection[j].CriminalX >= (curDivPos.CriminalX - mergePointOffset) && mergePointCollection[j].CriminalX <= (curDivPos.CriminalX + mergePointOffset)
+                    && mergePointCollection[j].CriminalY >= (curDivPos.CriminalY - mergePointOffset) && mergePointCollection[j].CriminalY <= (curDivPos.CriminalY + mergePointOffset)) {
+
+                    divTotal += 1;
+                    mergePointCollection[j].isTotal = 1;
+                    var kk=[]
+                    for(var k=0;k<mergePointCollection.length;k++){
+                      if(mergePointCollection[k].CriminalX ==mergePointCollection[j].CriminalX&&mergePointCollection[k].CriminalY ==mergePointCollection[j].CriminalY){
+                        var shortData={
+                          OrgName:mergePointCollection[k].OrgName,
+                          PersonID:mergePointCollection[k].PersonID,
+                          Name:mergePointCollection[k].Name,
+                          ManageLevelName:mergePointCollection[k].ManageLevelName,
+                          CriminalPhoto:mergePointCollection[k].CriminalPhoto,
+                          CriminalX:mergePointCollection[k].CriminalX,
+                          CriminalY:mergePointCollection[k].CriminalY,
+                          PSID:mergePointCollection[k].PSID,
+                          status:false,
+                        }
+                        kk.push(shortData)
+                      }
+                    }
+                    posMenu.push(kk);
+                  }
+                }
+                if (divTotal > 2) {
+                  if (curDivPos.isTotal == undefined) {
+                    curDivPos = $.extend(curDivPos, { "isTotal": divTotal });
+                  }
+                  else {
+                    curDivPos.isTotal = divTotal;
+                  }
+                  if (curDivPos.posMenu == undefined) {
+                    curDivPos = $.extend(curDivPos, { "posMenu": posMenu });
+                  }
+                  else {
+                    curDivPos.posMenu = posMenu;
+                  }
+                }
+              }
+            }
+            var realData=[]
+            for (let m=0;m<mergePointCollection.length;m++){
+              if(mergePointCollection[m].posMenu!==undefined){
+                realData.push(mergePointCollection[m])
+              }
+            }
+            vm.criminalGroups=realData
+            console.log("kkkk",realData)
+
+
+
           },
           complete: function (XHR) {
             vm.getMapAct=setInterval(function () {
               vm.pointShow()
-            },2000)
+            },5000)
             XHR = null;  //回收资源
+
           }
         });
-
 
       },
       /* 地图定位实时刷新 */
@@ -514,7 +629,6 @@
           url: ajaxUrl,
           data:JSON.stringify(sendMessage),
           success: function (result) {
-//         console.log(result)
             for (let i=0;i<result.length;i++){
               for (let j=0;j<vm.criminalLists.length;j++){
                 if(vm.criminalLists[j].PSID.toLowerCase()==result[i].PSID.toLowerCase()){
@@ -543,11 +657,74 @@
               }else if(vm.criminalLists[j].ManageLevel=="4204"){
                 KC.push(vm.criminalLists[j])
               }
+              vm.KGL=0
+              vm.YGL=0
+              vm.PGL=0
+              vm.KCL=0
               vm.KGL=KG.length
               vm.YGL=YG.length
               vm.PGL=PG.length
               vm.KCL=KC.length
             }
+
+
+            var positionData=vm.criminalLists
+            var mergePointOffset=0
+            var mergePointCollection = JSON.parse(JSON.stringify(positionData));
+            for (var i = 0; i < mergePointCollection.length; i++) {
+              var curDivPos = mergePointCollection[i];
+              if (curDivPos.isTotal == undefined) {
+                var divTotal = 1;
+                var posMenu = [];
+                for (var j = i; j < mergePointCollection.length; j++) {
+                  if (mergePointCollection[j].isTotal == undefined && mergePointCollection[j].CriminalX >= (curDivPos.CriminalX - mergePointOffset) && mergePointCollection[j].CriminalX <= (curDivPos.CriminalX + mergePointOffset)
+                    && mergePointCollection[j].CriminalY >= (curDivPos.CriminalY - mergePointOffset) && mergePointCollection[j].CriminalY <= (curDivPos.CriminalY + mergePointOffset)) {
+                    divTotal += 1;
+                    mergePointCollection[j].isTotal = 1;
+                    var kk=[]
+                    for(var k=0;k<mergePointCollection.length;k++){
+                      if(mergePointCollection[k].CriminalX ==mergePointCollection[j].CriminalX&&mergePointCollection[k].CriminalY ==mergePointCollection[j].CriminalY){
+                        var shortData={
+                          OrgName:mergePointCollection[k].OrgName,
+                          PersonID:mergePointCollection[k].PersonID,
+                          Name:mergePointCollection[k].Name,
+                          ManageLevelName:mergePointCollection[k].ManageLevelName,
+                          CriminalPhoto:mergePointCollection[k].CriminalPhoto,
+                          CriminalX:mergePointCollection[k].CriminalX,
+                          CriminalY:mergePointCollection[k].CriminalY,
+                          PSID:mergePointCollection[k].PSID,
+                          status:false,
+                        }
+                        kk.push(shortData)
+                      }
+                    }
+                    posMenu.push(kk);
+                  }
+                }
+                if (divTotal > 2) {
+                  if (curDivPos.isTotal == undefined) {
+                    curDivPos = $.extend(curDivPos, { "isTotal": divTotal });
+                  }
+                  else {
+                    curDivPos.isTotal = divTotal;
+                  }
+                  if (curDivPos.posMenu == undefined) {
+                    curDivPos = $.extend(curDivPos, { "posMenu": posMenu });
+                  }
+                  else {
+                    curDivPos.posMenu = posMenu;
+                  }
+                }
+              }
+            }
+            var realData=[]
+            for (let m=0;m<mergePointCollection.length;m++){
+              if(mergePointCollection[m].posMenu!==undefined){
+                realData.push(mergePointCollection[m])
+              }
+            }
+            vm.criminalGroups=realData
+
 
 
           },
@@ -568,6 +745,9 @@
     mounted () {
       let vm = this
 
+
+//      vm.ipImg='http://'+window.location.host+'/dist/static/'
+      vm.ipImg='../../static/'
       scaleNum=1
       $.ajax({
         type: "get",
@@ -621,6 +801,44 @@
 </script>
 
 <style lang="scss" scoped>
+  .personGroups{
+    width: 30px;
+    height: 30px;
+    border-radius: 50px;
+    color: white;
+    background: red;
+    line-height: 30px;
+    position: absolute;
+    top: 300px;
+    left: 300px;
+  }
+  .personGroup{
+    width: 141px;
+    background: #2368e4;
+    max-height: 166px;
+  }
+  .personName{
+    width: 116px;
+    color: white;
+    font-size: 21px;
+    text-align: center;
+    line-height: 26px;
+    margin: 0px auto;
+    padding: 4px;
+    border-bottom: 1px solid wheat
+
+  }
+  .personName:active{
+    width: 116px;
+    color: white;
+    font-size: 21px;
+    text-align: center;
+    line-height: 26px;
+    margin: 0px auto;
+    background: red;
+    border-bottom: 1px solid wheat
+
+  }
   .searchInput::-webkit-input-placeholder{
     color: #fff;
   }
@@ -696,7 +914,6 @@
     background: #d9e3fe;
     height: 694px;
     overflow: auto;
-    padding: 20px;
   }
 
   .li4_parts .partsBody {
@@ -711,7 +928,6 @@
   }
   .li4_parts .bodyCon{
     height: 592px;
-    /*padding: 20px;*/
   }
   .li4_parts .sure{
     width: 126px;

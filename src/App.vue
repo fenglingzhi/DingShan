@@ -143,7 +143,9 @@
         <div class="partsFoot">
           <div class="alertText">{{alertText}}</div>
           <div style="margin: 20px 2px;float: right">
-            <div class="sure" v-on:click="alarmHandle()">处理</div>
+            <!--<div class="sure" v-on:click="alarmHandle()">处理</div>-->
+            <input class="sure" id="stop" value="处理"  type="button" v-on:click="alarmHandle()">
+
           </div>
         </div>
       </div>
@@ -353,7 +355,7 @@
         FlnkIDList_3 : [],                //外监进入人员ID
         FlnkIDList_33: [],
         FlnkIDList_4 : [],                //在监人数（非在线）ID
-        FlnkIDList_44: ['123123123'],
+        FlnkIDList_44: [],
         chartsDatas:[],                   //人员分布图表渲染数据
         chartsDatasName:[],               //人员分布图表-表名
         crimalCount_outCrimalCount:{},    //监区人数 && 外出人数（监外）
@@ -544,6 +546,7 @@
             if(result != null){
               vm.alertYHDL = false
               localStorage.setItem('placemanID',result[0].FlnkID)
+              vm.delDisabled()
               vm.canRouter=0
               vm.policeLogin.password=""
               vm.policeLogin.account=""
@@ -579,6 +582,7 @@
 
       /* 登录关闭按钮 */
       loginclose:function () {
+        this.delDisabled()
         localStorage.setItem("placemanID",1)
         this.$router.push({ path: '/' })
         this.alertYHDL=false
@@ -634,7 +638,14 @@
       /* Coding By YanM */
 
       /* Coding By Qianjf */
-
+      /*阻止点击提交*/
+      addDisabled:function () {
+        $('#stop').attr("disabled","disable");
+      },
+      /*解除点击提交*/
+      delDisabled:function () {
+        $('#stop').removeAttr("disabled");
+      },
      /* 零时互监组取消操作，清空刷卡内容*/
       delCardPerson:function () {
         this.cardPerson=[]
@@ -665,11 +676,13 @@
         var vm = this
         var alarmRecordID = $("#alarmRecordID").html()
         var alarmAreaID = $("#alarmAreaID").html()
-
-
+        vm.addDisabled()
         var alarmHandS = setInterval(function () {
           if(localStorage.getItem("placemanID")==0){
              vm.alertYHDL=true
+            clearInterval(alarmHandS)
+          }else if(localStorage.getItem("placemanID")==1){
+            vm.alertYHDL=true
             clearInterval(alarmHandS)
           }else {
             var placemanID = localStorage.getItem("placemanID")
@@ -730,6 +743,7 @@
                         if(vm.alarmPages==0){
                           vm.alarmPages=1
                           vm.alertBJTK=false
+                          vm.alertBJXX=false
                         }
 //                            vm.alarmNowPage=vm.alarmPages
                         vm.alarmBack()
@@ -737,6 +751,7 @@
                       }
                     }
                   }
+                  vm.delDisabled()
                   vm.alarmText =  vm.alarmList[0].Description
 
                   vm.alertText="处理成功"
@@ -1447,16 +1462,29 @@
       /* 打开websocket */
       vm.ws.onopen = function(){
         vm.onlinestatus = true
-        setInterval(function () {
-          /* 保持心跳-参数-01 */
-          vm.ws.send(JSON.stringify(keep_heart))
-          /* 人员分布-参数-14 */
+//        setInterval(function () {
+//          /* 保持心跳-参数-01 */
+//          vm.ws.send(JSON.stringify(keep_heart))
+//          /* 人员分布-参数-14 */
 //          vm.ws.send(JSON.stringify(flowPerson_outPrison))
-          /* 流动人员 && 外监进入人员-参数-24 */
-          vm.ws.send(JSON.stringify(personnel_distribution))
-        },5000)
+//          /* 流动人员 && 外监进入人员-参数-24 */
+//          vm.ws.send(JSON.stringify(personnel_distribution))
+//        },5000)
       };
 
+      var headKeep=setInterval(function () {
+        if(vm.ws.readyState == WebSocket.OPEN){
+            clearInterval(headKeep)
+          setInterval(function () {
+            /* 保持心跳-参数-01 */
+            vm.ws.send(JSON.stringify(keep_heart))
+            /* 人员分布-参数-14 */
+            vm.ws.send(JSON.stringify(flowPerson_outPrison))
+            /* 流动人员 && 外监进入人员-参数-24 */
+            vm.ws.send(JSON.stringify(personnel_distribution))
+          },5000)
+        }
+      },1000)
 
       /* websocket接收信息 */
       vm.ws.onmessage=function(event) {
@@ -1584,7 +1612,7 @@
         /* 流动人员 && 外监进入人员-返回数据-24 */
         if(JSON.parse(event.data).Header.MsgType === 24){
           var  flowPerson_outPrison_rec = JSON.parse(JSON.parse(event.data).Body)
-
+          console.log("人员流动",flowPerson_outPrison_rec)
 
 //          // 1、外出人数（监内）
 //          vm.FlnkIDList_1.length = 0
@@ -1714,13 +1742,14 @@
         if(JSON.parse(event.data).Header.MsgType === 51){
           var  chest_card = JSON.parse(JSON.parse(event.data).Body)
           var  wristband = JSON.parse(JSON.parse(event.data).Body)
-
-
           //判断是胸卡
+
           if(chest_card.CardType === 0){
             if(vm.chest_card.length ===0){
+
               vm.chest_card.push({
-                CardID:chest_card.CardID,
+                RFID:chest_card.RFID,
+                CardID:chest_card.IC,
                 CardType:chest_card.CardType,
                 CriminalID:chest_card.CriminalID,
                 CriminalNum:vm.criminalList[0][chest_card.CriminalID].CriminalID,
@@ -1733,13 +1762,14 @@
             }else{
               let flag = 1
               for(let i = 0; i<vm.chest_card.length; i++){
-                if(vm.chest_card[i].CardID == chest_card.CardID){
+                if(vm.chest_card[i].CardID == chest_card.IC){
                   flag = 0
                 }
               }
               if(flag == 1){
                 vm.chest_card.push({
-                  CardID:chest_card.CardID,
+                  RFID:chest_card.RFID,
+                  CardID:chest_card.IC,
                   CardType:chest_card.CardType,
                   CriminalID:chest_card.CriminalID,
                   CriminalNum:vm.criminalList[0][chest_card.CriminalID].CriminalID,
@@ -1759,7 +1789,7 @@
               if(vm.chest_card.length!==0){
                 let flag = 1
                 for(let i = 0; i<vm.chest_card.length; i++){
-                  if(vm.chest_card[i].wristband == wristband.CardID){
+                  if(vm.chest_card[i].wristband == wristband.IC){
                     flag = 0
                     notRightName=vm.chest_card[i].CriminalName
                   }
@@ -1768,32 +1798,49 @@
                   for(let i = 0; i<vm.chest_card.length; i++){
                     if(vm.chest_card[i].status === true){
                       //提交绑定数据
-                      vm.chest_card[i].wristband=wristband.CardID
+                      vm.chest_card[i].wristband=wristband.IC
+                      vm.chest_card[i].RFID2=wristband.RFID
                     }
                   }
                 }else {
-                  alert(notRightName+"已绑定此腕带")
+                  vm.$message(notRightName+"已绑定此腕带")
                 }
               }
             } else {
               if(vm.wristband.length === 0){
                 vm.wristband.push({
                   CrimalName:vm.criminalList[0][wristband.CriminalID].CriminalName,
-                  CardID:wristband.CardID,
+                  CardID:wristband.IC,
+                  RFID:wristband.RFID,
                   CriminalID:wristband.CriminalID,
                   Photo:vm.criminalList[0][wristband.CriminalID].Photo,
                 })
               } else {
+                let flag = 1
                 for(let i = 0; i<vm.wristband.length; i++){
-                  if(vm.wristband[i].CardID !== wristband.CardID){
-                    vm.wristband.push({
-                      CrimalName:vm.criminalList[0][wristband.CriminalID].CriminalName,
-                      CardID: wristband.CardID,
-                      CriminalID: wristband.CriminalID,
-                      Photo:vm.criminalList[0][wristband.CriminalID].Photo,
-                    })
+                  if(vm.wristband[i].CardID == wristband.CardID){
+                    flag = 0
                   }
                 }
+                if(flag == 1){
+                  vm.wristband.push({
+                    CrimalName:vm.criminalList[0][wristband.CriminalID].CriminalName,
+                    CardID:wristband.IC,
+                    RFID:wristband.RFID,
+                    CriminalID: wristband.CriminalID,
+                    Photo:vm.criminalList[0][wristband.CriminalID].Photo,
+                  })
+                }
+//                for(let i = 0; i<vm.wristband.length; i++){
+//                  if(vm.wristband[i].CardID !== wristband.CardID){
+//                    vm.wristband.push({
+//                      CrimalName:vm.criminalList[0][wristband.CriminalID].CriminalName,
+//                      CardID: wristband.CardID,
+//                      CriminalID: wristband.CriminalID,
+//                      Photo:vm.criminalList[0][wristband.CriminalID].Photo,
+//                    })
+//                  }
+//                }
               }
             }
           }
@@ -1808,6 +1855,7 @@
         vm.onlinestatus = false
         if(vm.onlinestatus === false){
           setInterval(function () {
+            vm.$router.push({ path: '/' })
             window.location.reload()
           },5000)
         }
@@ -1815,16 +1863,22 @@
 
       /* 错误信息 */
       vm.ws.onerror = function(evt) {
-          console.log("WebSocketError!",evt)
+         console.log("WebSocketError!",evt)
+        setInterval(function () {
+          vm.$router.push({ path: '/' })
+          window.location.reload()
+        },5000)
+
       }
 
       /* Coding By YanM */
 
       /* Coding By Qianjf */
       localStorage.setItem("moveTypes","0")//1为进出工，2为临时外出登记
-      $(".alertAlarm").draggable();
+      $("#stop").focus(function(){this.blur()});
 
-
+//      $(".alertAlarm").draggable();
+//console.log(vm.criminalList)
       /* Coding By Qianjf */
     }
   }

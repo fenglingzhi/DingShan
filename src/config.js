@@ -1,9 +1,9 @@
 // 配置baseurl
 // 接口地址
 /* 基础数据接口地址 */
-// export const BasicUrl = 'http://10.58.1.178:7702/api/'
-export const BasicUrl = 'http://'+window.location.host+'/api/'
-// export const BasicUrl = 'http://10.58.1.145:88/api/'
+// export const BasicUrl = 'http://10.58.1.178:7703/api/'
+// export const BasicUrl = 'http://'+window.location.host+'/api/'
+export const BasicUrl = 'http://10.58.1.145:88/api/'
 $.ajax({
   type: "get",
   contentType: "application/json; charset=utf-8",
@@ -22,14 +22,14 @@ $.ajax({
   }
 });
 /* 服务请求接口地址 */
-export const ajaxUrl = 'http://'+localStorage.getItem('IP')+':' +localStorage.getItem('TcpPort')
-// export const ajaxUrl = 'http://10.58.1.237:20001'
+// export const ajaxUrl = 'http://'+localStorage.getItem('IP')+':' +localStorage.getItem('TcpPort')
+export const ajaxUrl = 'http://10.58.1.237:20001'
 
 /* 静态资源地址 */
 // export const IMG = 'http://10.58.1.178:9112'
-// export const MapUrl ='http://10.58.1.145:88'
+export const MapUrl ='http://10.58.1.145:88'
 export const IMG = ''
-export const MapUrl =''
+// export const MapUrl =''
 export default {
   /*全局弹窗显示变量*/
   install(Vue){
@@ -43,8 +43,8 @@ export default {
       localStorage.setItem(keyName,keyValue)
     }
     /* websocket地址配置 */
-    Vue.prototype.ws = new WebSocket('ws:'+localStorage.getItem('IP')+':'+localStorage.getItem('WebSocketPort'))
-    // Vue.prototype.ws = new WebSocket('ws:10.58.1.237:20002')
+    // Vue.prototype.ws = new WebSocket('ws:'+localStorage.getItem('IP')+':'+localStorage.getItem('WebSocketPort'))
+    Vue.prototype.ws = new WebSocket('ws:10.58.1.237:20002')
 
   }
 }

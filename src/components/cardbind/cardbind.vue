@@ -24,8 +24,9 @@
                           <p>姓名：{{item.CriminalName}}</p>
                           <!--<p>罪犯编号：{{item.CriminalID}}</p>-->
                           <p>番号：{{item.CriminalNum}}</p>
-                          <p>胸牌编号：{{item.CardID}}</p>
-                          <p>腕带编号：{{item.wristband}}</p>
+                          <p>胸牌编号：{{item.RFID}}</p>
+                          <!--<p>胸牌编号：{{item.CardID}}</p>-->
+                          <p>腕带编号：{{item.RFID2}}</p>
                         </el-col>
                       </div>
                     </el-col>
@@ -37,7 +38,9 @@
                         <el-col :span="12" class="crimal_content">
                           <p>姓名：{{item.CrimalName}}</p>
                           <!--<p>罪犯编号：{{item.CriminalID}}</p>-->
-                          <p>腕带编号：{{item.CardID}}</p>
+                          <!--<p>腕带编号：{{item.CardID}}</p>-->
+                          <p>腕带编号：{{item.RFID}}</p>
+
                         </el-col>
                       </div>
                     </el-col>
@@ -161,7 +164,8 @@
         for(let i = 0; i<vm.chest_card.length; i++){
           if(vm.chest_card[i].wristband == null || vm.chest_card[i].wristband == ''){
 //            alert('请绑定腕带')
-            vm.alertTip="请绑定腕带"
+            vm.delDisable()
+            vm.alertTip="有胸牌未绑定腕带，可长按删除此胸牌"
             setTimeout(function () {
               vm.alertTip=""
             },2000)
@@ -202,7 +206,7 @@
               setTimeout(function () {
                 vm.alertTip=""
                 vm.$router.push({ path: '/' })
-              },2000)
+              },1000)
             } else {
               /*alert('绑定失败')*/
               vm.alertTip="绑定失败"
@@ -304,7 +308,7 @@
               setTimeout(function () {
                 vm.alertTip=""
                 vm.$router.push({ path: '/' })
-              },2000)
+              },1000)
 
             } else {
 //              alert('解除绑定失败')
@@ -353,7 +357,7 @@
               setTimeout(function () {
                 vm.alertTip=""
                 vm.$router.push({ path: '/' })
-              },2000)
+              },1000)
               localStorage.setItem("moveTypes","0")
 
 
@@ -430,7 +434,7 @@
     }
   }
   .card_bind_select{
-    box-shadow: inset 0px 0px 9px 3px #000000;
+    box-shadow: inset 0px 0px 18px 8px #000000;
   }
   .card_bind_success{
     background: #196efc !important;

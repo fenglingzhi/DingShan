@@ -8,7 +8,7 @@
             <el-col :span="3" style="height: 10px;"></el-col>
             <el-col :span="21">
               <p>监区人数：{{crimalCount_outCrimalCount.Total}}人</p>
-              <p>在监人数：{{FlnkIDList4.length}}人</p>
+              <p>在监人数：{{crimalCount_outCrimalCount.Total-FlnkIDList4.length}}人</p>
               <p>外出人数（监内）：{{FlnkIDList1.length}}人</p>
               <p>外出人数（监外）：{{crimalCount_outCrimalCount.OutCount}}人</p>
               <p>非法流动人数：{{FlnkIDList2.length}}人</p>
@@ -177,7 +177,7 @@ export default {
           label: {
             normal: {
               position: 'inside',
-              formatter: '{b} :{c}人',
+              formatter: '{c}人',
               textStyle: {
                 color: '#333',
                 fontWeight: 'bold',

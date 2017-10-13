@@ -42,22 +42,28 @@ export default {
 //
       if(path === '/outwork' ){
         if(localStorage.getItem("moveTypes")==2){
-            alert("请先完成临时外出登记")
-          vm.$emit('routerTip',"请先完成临时外出登记")
+//          vm.$emit('routerTip',"请先完成临时外出登记")
+          vm.$message("请先完成临时外出登记")
+
         }else if(localStorage.getItem("moveTypes")==3){
-          alert("请先完成卡绑定操作")
-          vm.$emit('routerTip',"请先完成临时外出登记")
+          vm.$message("请先完成临时外出登记")
         }else {
           this.$router.push({ path: '/outwork' })
           vm.$emit('openLogin',true)
         }
       }else if(path === '/outregister'){
         if(localStorage.getItem("moveTypes")==1){
-          vm.$emit('routerTip',"请先完成进出工登记")
+//          vm.$emit('routerTip',"请先完成进出工登记")
+          vm.$message("请先完成进出工登记")
+
         }else if(localStorage.getItem("moveTypes")==3){
-          vm.$emit('routerTip',"请先完成人员绑卡操作")
+//          vm.$emit('routerTip',"请先完成人员绑卡操作")
+          vm.$message("请先完成人员绑卡操作")
+
         }else if(localStorage.getItem("moveTypes")==4){
-          vm.$emit('routerTip',"请先完成人员解绑操作")
+//          vm.$emit('routerTip',"请先完成人员解绑操作")
+          vm.$message("请先完成人员解绑操作")
+
         }else {
           this.$router.push({ path: '/outregister' })
           vm.$emit('openLogin',true)
@@ -75,18 +81,26 @@ export default {
           this.$router.push({ path: '/' })
       }else if(path === '/cardbind') {
         if(localStorage.getItem("moveTypes")==2){
-          vm.$emit('routerTip',"请先完成外出登记")
+//          vm.$emit('routerTip',"请先完成外出登记")
+          vm.$message("请先完成外出登记")
+
         }else if(localStorage.getItem("moveTypes")==1){
-          vm.$emit('routerTip',"请先完成进出工登记")
+//          vm.$emit('routerTip',"请先完成进出工登记")
+          vm.$message("请先完成进出工登记")
+
         }else {
           this.$router.push({ path: '/cardbind' })
           vm.$emit('openLogin',true)
         }
       }else if(path === '/cardUnBind') {
         if(localStorage.getItem("moveTypes")==2){
-          vm.$emit('routerTip',"请先完成外出登记")
+//          vm.$emit('routerTip',"请先完成外出登记")
+          vm.$message("请先完成外出登记")
+
         }else if(localStorage.getItem("moveTypes")==1){
-          vm.$emit('routerTip',"请先完成进出工登记")
+//          vm.$emit('routerTip',"请先完成进出工登记")
+          vm.$message("请先完成进出工登记")
+
         }else {
           this.$router.push({ path: '/cardUnBind' })
           vm.$emit('openLogin',true)

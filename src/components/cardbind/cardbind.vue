@@ -165,7 +165,7 @@
           if(vm.chest_card[i].wristband == null || vm.chest_card[i].wristband == ''){
 //            alert('请绑定腕带')
             vm.delDisable()
-            vm.alertTip="有胸牌未绑定腕带，可长按删除此胸牌"
+            vm.alertTip="有人员未更换腕带，请确认！长按人员信息框可删除。 "
             setTimeout(function () {
               vm.alertTip=""
             },2000)

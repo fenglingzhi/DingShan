@@ -4,6 +4,28 @@
     <el-col :span="1" style="height:10px"></el-col>
     <el-col :span="22">
       <div class="li3_parts">
+        <!--键盘模块Star-->
+        <div  class="searchMode" v-show="searchModeShow">
+          <p style="font-size: 20px;color: #f00000;">请输入外出时长（分钟）</p>
+          <input class="searchInput" maxlength="18" v-model="seachNum"  type="text">
+          <div class="searchBottons">
+            <div class="listY"  v-on:click="enterNum('1')">1</div>
+            <div class="listY" v-on:click="enterNum('2')">2</div>
+            <div class="listY" v-on:click="enterNum('3')">3</div>
+            <div class="listY" v-on:click="enterNum('4')">4</div>
+            <div class="listY" v-on:click="enterNum('5')">5</div>
+            <div class="listY" v-on:click="enterNum('6')">6</div>
+            <div class="listY" v-on:click="enterNum('7')">7</div>
+            <div class="listY" v-on:click="enterNum('8')">8</div>
+            <div class="listY" v-on:click="enterNum('9')">9</div>
+            <div class="listY" v-on:click="enterNum('0')">0</div>
+            <div class="listY" v-on:click="enterNum('-')"style="font-size: 23px;width:77px;">清除</div>
+
+            <div class="listY" style="font-size: 23px;" v-on:click="setTime()">确定</div>
+            <!--<div class="listY" style="font-size: 23px;" v-on:click="searchModeShow=false">关闭</div>-->
+          </div>
+        </div>
+        <!--键盘模块End-->
         <!--<div class="tabHead"style="height:40px;">-->
           <!--<div  :class="['tab', { tabing: isB1}]"  v-on:click="toggle1()">外出登记</div>-->
           <!--<div  :class="['tab', { tabing: isB2}]"  v-on:click="toggle2()">登记记录</div>-->
@@ -16,11 +38,40 @@
             <div class="bodyCon">
               <el-row >
                 <el-col :span="12">
+
+                  <el-row >
+                    <el-row >
+                      <div class="deailHead">
+                        外出事由 <span   v-show="TimeShow" style="font-size: 16px;color: #f53a2a;font-weight: 800;">(外出时长{{seachNum}}分钟)</span>
+                      </div>
+                      <div class="deailBody" style="height:269px;">
+                        <el-col :span="4" v-for="(reason,index) in reasonList.slice(reasonA-1,reasonB)" :key="1">
+                          <div :class="['choose', {choosed: reason.ischoose}]" v-on:click="chooseReason(index,reason.Str3,reason.Str4)"  >
+                            {{reason.DictCodeName}}
+                          </div>
+                        </el-col>
+                      </div>
+                    </el-row>
+                    <el-row >
+                      <el-col :span="3" style="height: 10px"></el-col>
+                      <el-col :span="18" >
+                        <div class="pages">
+                          <span class="pageControl"><img src="../../assets/q1.png" v-on:click="ReasonBack()" alt=""/></span>
+                          <span class="pagesText">{{reasonNowPage}}/{{reasonPages}}</span>
+                          <span class="pageControl"><img src="../../assets/q2.png" v-on:click="ReasonGo()" alt=""/></span>
+                        </div>
+                      </el-col>
+                      <el-col :span="3" style="height: 10px"></el-col>
+                    </el-row>
+
+                  </el-row>
+
+                  <div style="height:0px;"></div>
                   <el-row >
                     <div class="deailHead">
                       外出地点
                     </div>
-                    <div class="deailBody" style="height:269px;">
+                    <div class="deailBody" style="height:110px;">
                       <el-col :span="4" v-for="(areaName,index) in areaNameList.slice(areaA-1,areaB)" :key="1">
                         <div  :class="['choose', {choosed: areaName.ischoose}]" v-on:click="chooseArea(index)">
                           {{areaName.AreaName}}
@@ -38,36 +89,6 @@
                       </div>
                     </el-col>
                     <el-col :span="3" style="height: 10px"></el-col>
-                  </el-row>
-
-                  <div style="height:0px;"></div>
-
-                  <el-row >
-                    <el-row >
-                      <div class="deailHead">
-                        外出事由
-                      </div>
-                      <div class="deailBody" style="height:110px;">
-                        <el-col :span="4" v-for="(reason,index) in reasonList.slice(reasonA-1,reasonB)" :key="1">
-                          <div :class="['choose', {choosed: reason.ischoose}]" v-on:click="chooseReason(index)">
-                            {{reason.DictCodeName}}
-                          </div>
-                        </el-col>
-
-                      </div>
-                    </el-row>
-                    <el-row >
-                      <el-col :span="3" style="height: 10px"></el-col>
-                      <el-col :span="18" >
-                        <div class="pages" style="    margin: 23px auto;">
-                          <span class="pageControl"><img src="../../assets/q1.png" v-on:click="ReasonBack()" alt=""/></span>
-                          <span class="pagesText">{{reasonNowPage}}/{{reasonPages}}</span>
-                          <span class="pageControl"><img src="../../assets/q2.png" v-on:click="ReasonGo()" alt=""/></span>
-                        </div>
-                      </el-col>
-                      <el-col :span="3" style="height: 10px"></el-col>
-                    </el-row>
-
                   </el-row>
                 </el-col>
                 <el-col :span="1" style="height:10px;">
@@ -141,50 +162,6 @@
             </div>
           </div>
         </div>
-        <!--<div class="tab2" v-show="isShow2">-->
-          <!--<div class="partsBody" style="height:697px;">-->
-
-            <!--<div class="bodyCon">-->
-
-              <!--<table  border="1" width="100%">-->
-                <!--<tr>-->
-                  <!--<th>清点类型</th>-->
-                  <!--<th>清点时间</th>-->
-                  <!--<th>应点总数</th>-->
-                  <!--<th>实点总数</th>-->
-                  <!--<th>柜内已点</th>-->
-                  <!--<th>柜外已点</th>-->
-                  <!--<th>未点总数</th>-->
-                  <!--<th>清点人姓名</th>-->
-                  <!--<th>清点状态</th>-->
-                <!--</tr>-->
-                <!--<tr v-for="record in records" :key="1">-->
-                  <!--<td>{{record.CountTypeName}}</td>-->
-                  <!--<td>{{(record.CountTime==""||record.CountTime==null)?"":record.CountTime.replace("T"," ")}}</td>-->
-                  <!--<td>{{record.ShouldCount}}</td>-->
-                  <!--<td>{{record.RealCount}}</td>-->
-                  <!--<td>{{record.InnerCount}}</td>-->
-                  <!--<td>{{record.OutterCount}}</td>-->
-                  <!--<td>{{record.UnCount}}</td>-->
-                  <!--<td>{{record.PoliceName}}</td>-->
-                  <!--<td>{{record.StatusName}}</td>-->
-                <!--</tr>-->
-              <!--</table>-->
-
-            <!--</div>-->
-            <!--<el-row >-->
-              <!--<el-col :span="8" style="height: 10px"></el-col>-->
-              <!--<el-col :span="8" >-->
-                <!--<div class="pages">-->
-                  <!--<span class="pageControl"><img src="../../assets/q1.png" v-on:click="getRecordback()" alt=""/></span>-->
-                  <!--<span class="pagesText">{{recordPage+1}}/{{Math.ceil(recordCount/20)==0?1:Math.ceil(recordCount/20)}}</span>-->
-                  <!--<span class="pageControl"><img src="../../assets/q2.png" v-on:click="getRecordGo()" alt=""/></span>-->
-                <!--</div>-->
-              <!--</el-col>-->
-              <!--<el-col :span="8" style="height: 10px"></el-col>-->
-            <!--</el-row>-->
-          <!--</div>-->
-        <!--</div>-->
 
       </div>
     </el-col>
@@ -203,6 +180,10 @@
     ],
     data () {
       return {
+        orgTime:"0",
+        seachNum:"0",
+        searchModeShow:false,
+        TimeShow:false,
         isShow1: true,
         isShow2: false,
         isB1: true,
@@ -212,13 +193,13 @@
         areaNowPage:1,//外出地点当前页
         areaListAll:0,//外出地点总数
         areaA:1,
-        areaB:30,
+        areaB:12,
         reasonList:[],// 外出事由
         reasonNowPage:1,// 外出事由当前页码
         reasonPages:1,// 外出事由总页码
         reasonListAll:0,
         reasonA:1,
-        reasonB:12,
+        reasonB:30,
         isSuccess:0,
 
         outCriminals:[],//外出罪犯信息
@@ -238,6 +219,21 @@
       }
     },
     methods: {
+      /*搜索输入按键*/
+      enterNum:function (Num) {
+        if(Num=="-"){
+          this.seachNum=""
+        }else {
+          this.seachNum= this.seachNum+Num
+        }
+      },
+      setTime:function () {
+          if(this.seachNum==""){
+            this.seachNum= this.orgTime
+          }
+        this.searchModeShow=false
+
+      },
       toggle1: function () {
         this.isShow1 = true
         this.isShow2 =false
@@ -257,11 +253,25 @@
         }
         this.areaNameList[dom+this.areaA-1].ischoose=!this.areaNameList[dom+this.areaA-1].ischoose
       },
-      chooseReason:function (dom) {
+      chooseReason:function (dom,isNeed,time) {
         for(var i=0;i< this.reasonList.length;i++){
           this.reasonList[i].ischoose=false
         }
         this.reasonList[dom+this.reasonA-1].ischoose=!this.reasonList[dom+this.reasonA-1].ischoose
+
+        if(isNeed=="1"){
+          this.isNeed=true
+          this.orgTime=time
+          this.seachNum=time
+          this.searchModeShow=true
+          this.TimeShow=true
+
+        }else {
+          this.searchModeShow=false
+          this.TimeShow=false
+
+        }
+
       },
       areaGo:function () {
         if(this.areaNowPage<this.areaPages){
@@ -285,8 +295,8 @@
       ReasonGo:function () {
           if(this.reasonNowPage<this.reasonPages){
             this.reasonNowPage=this.reasonNowPage+1
-            this.reasonA=this.reasonA+12
-            this.reasonB=this.reasonB+12
+            this.reasonA=this.reasonA+30
+            this.reasonB=this.reasonB+30
           }else {
 //            alert("已经最后一页了")
           }
@@ -296,8 +306,8 @@
 //          alert("已经是第一页了")
         }else {
           this.reasonNowPage=this.reasonNowPage-1
-          this.reasonA=this.reasonA-12
-          this.reasonB=this.reasonB-12
+          this.reasonA=this.reasonA-30
+          this.reasonB=this.reasonB-30
         }
 
       },
@@ -520,6 +530,8 @@
             Body: JSON.stringify({
               OrgID : localStorage.getItem('OrgID'),
               DoorID : localStorage.getItem('DoorID'),
+              IsSpectialMove:vm.TimeShow,
+              UnhandledTime:vm.seachNum,
 //            AreaID : localStorage.getItem('AreaID'),
               Criminals:Criminals,
               Polices:Polices,
@@ -669,7 +681,7 @@
         success: function (result) {
           if(result!=""&&result!=null){
             vm.areaListAll=result.length
-              vm.areaPages=Math.ceil(result.length/30)==0?1:Math.ceil(result.length/30)
+              vm.areaPages=Math.ceil(result.length/12)==0?1:Math.ceil(result.length/12)
             for (var i=0;i<result.length;i++){
                result[i]["ischoose"]=false
             }
@@ -696,12 +708,13 @@
         success: function (result) {
           if(result!=""&&result!=null){
             vm.reasonListAll=result.length
-            vm.reasonPages=Math.ceil(result.length/12)==0?1:Math.ceil(result.length/12)
+            vm.reasonPages=Math.ceil(result.length/30)==0?1:Math.ceil(result.length/30)
             for (var i=0;i<result.length;i++){
               result[i]["ischoose"]=false
             }
             vm.reasonList=result
-//             console.log(result)
+
+             console.log(result)
           }
 
         },
@@ -875,4 +888,63 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .searchInput::-webkit-input-placeholder{
+    color: #fff;
+  }
+  .searchMode{
+    position: absolute;
+    z-index: 9999999;
+    background: #a2bcdb;
+    border-radius: 7px;
+    margin: 195px 545px;
+    height: 351px;
+    width: 437px;
+  }
+  .searchInput{
+    width: 353px;
+    height: 47px;
+    margin: 6px 0px;
+    font-size: 30px;
+    text-align: center;
+    background: #697a8f;
+    color: white;
+  }
+
+  .searchBottons{
+    width: 383px;
+    height: 10px;
+    margin: 0px auto;
+
+  }
+  .listX{
+    width: 100%;
+
+  }
+  .listY{
+    width: 76px;
+    height: 49px;
+    float: left;
+    border: 1px solid blue;
+    margin: 8px 8px;
+    font-size: 30px;
+    line-height: 51px;
+    background: #3f73fb;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 1px 1px 4px -2px;
+
+  }
+  .listY:active{
+    width: 76px;
+    height: 49px;
+    float: left;
+    border: 1px solid blue;
+    margin: 8px 8px;
+    font-size: 30px;
+    line-height: 51px;
+    border-radius: 8px;
+    box-shadow: 1px 1px 4px 4px;
+  }
+
 </style>

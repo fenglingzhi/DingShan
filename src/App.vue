@@ -456,6 +456,7 @@
           url: BasicUrl + 'HomeIndex/GetBindJQ',
           success: function (result) {
             vm.prisonSelect=result
+//            console.log("result",result)
             vm.prisonSelectText = vm.prisonSelect[0].AreaName
             vm.setLocalStorage('OrgID',vm.prisonSelect[0].OrgID)
             vm.setLocalStorage('DoorID',vm.prisonSelect[0].Door)
@@ -764,6 +765,8 @@
               },
               error: function (err) {
                 clearInterval(alarmHandS)
+                vm.delDisabled()
+
 //                vm.alertText="请求异常"
               },
               complete: function (XHR, TS) {
@@ -1612,7 +1615,7 @@
         /* 流动人员 && 外监进入人员-返回数据-24 */
         if(JSON.parse(event.data).Header.MsgType === 24){
           var  flowPerson_outPrison_rec = JSON.parse(JSON.parse(event.data).Body)
-          console.log("人员流动",flowPerson_outPrison_rec)
+//          console.log("人员流动",flowPerson_outPrison_rec)
 
 //          // 1、外出人数（监内）
 //          vm.FlnkIDList_1.length = 0
@@ -1736,6 +1739,7 @@
           var  placeman_card = JSON.parse(JSON.parse(event.data).Body).PoliceID
           vm.alertYHDL = false
           localStorage.setItem('placemanID',placeman_card)
+          vm.delDisabled()
         }
 
         /* 绑定卡-刷卡数据-51 */
@@ -1818,7 +1822,7 @@
               } else {
                 let flag = 1
                 for(let i = 0; i<vm.wristband.length; i++){
-                  if(vm.wristband[i].CardID == wristband.CardID){
+                  if(vm.wristband[i].CardID == wristband.IC){
                     flag = 0
                   }
                 }
@@ -1867,7 +1871,7 @@
         setInterval(function () {
           vm.$router.push({ path: '/' })
           window.location.reload()
-        },5000)
+        },3000)
 
       }
 
@@ -1915,6 +1919,7 @@
     width: 1584px;
     height: 1024px;
     overflow: hidden;
+    position: absolute;
 
   }
   .alertTip {
@@ -2024,6 +2029,7 @@
     color: red;
     font-weight: 800;
     height:15px;
+    white-space: nowrap;
   }
   .alertBJXX .tipName{
     display: inline-block;
@@ -2090,9 +2096,10 @@
   /*报警弹框*/
   .alertAlarm{
     width: 230px;
-    height: 80px;
+    min-height: 80px;
     position: fixed;
-    bottom: 80px;
+    /*bottom: 80px;*/
+    top:880px;
     right: 34px;
     position: absolute;
     background: rgb(255, 51, 51);
@@ -2110,7 +2117,7 @@
     float: right;
     margin: 6px 6px;
     width: 120px;
-    height: 47px;
+    min-height:58px;
     color: black;
     text-align: left;
     font-size: 16px;

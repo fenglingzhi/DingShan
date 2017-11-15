@@ -442,6 +442,24 @@
         this.setLocalStorage('OrgID',this.prisonSelect[index].OrgID)
         this.setLocalStorage('AreaID',this.prisonSelect[index].AreaID)
         this.setLocalStorage('AreaType',this.prisonSelect[index].AreaType)
+
+        $.ajax({
+          type: "get",
+          contentType: "application/json; charset=utf-8",
+          dataType: "jsonp",
+          jsonp: "callback",
+          async: false,
+          data:{
+            areaid:localStorage.getItem("AreaID")
+          },
+          url: BasicUrl + 'homeindex/getareainfobyid',
+          success: function (result) {
+            localStorage.setItem("areIds",result[0].MapFlnkID.toUpperCase())
+          },
+          error: function (err) {
+            console.log(err)
+          }
+        })
       },
 
       /* 默认初始化监区 */
@@ -456,7 +474,7 @@
           url: BasicUrl + 'HomeIndex/GetBindJQ',
           success: function (result) {
             vm.prisonSelect=result
-//            console.log("result",result)
+//            console.log("resultresultresultresult",result)
             vm.prisonSelectText = vm.prisonSelect[0].AreaName
             vm.setLocalStorage('OrgID',vm.prisonSelect[0].OrgID)
             vm.setLocalStorage('DoorID',vm.prisonSelect[0].Door)
@@ -484,6 +502,24 @@
             console.log(err)
           }
         })
+        $.ajax({
+          type: "get",
+          contentType: "application/json; charset=utf-8",
+          dataType: "jsonp",
+          jsonp: "callback",
+          async: false,
+          data:{
+            areaid:localStorage.getItem("AreaID")
+          },
+          url: BasicUrl + 'homeindex/getareainfobyid',
+          success: function (result) {
+            localStorage.setItem("areIds",result[0].MapFlnkID.toUpperCase())
+          },
+          error: function (err) {
+            console.log(err)
+          }
+        })
+
       },
 
       /* 提交选择监区 */
@@ -1576,22 +1612,54 @@
         /* 报警信息 */
         if (JSON.parse(event.data).Header.MsgType === 2) {
           var alarmNews = JSON.parse(JSON.parse(event.data).Body)
+          console.log("alarmNews",alarmNews)
             /* 区域过滤测试后解开 */
+          var personIDs=[]
           if (alarmNews.OrgID.toUpperCase() == localStorage.getItem("OrgID")) {
-          var criminalData = alarmNews
-            criminalData.criminalID = vm.criminalList[0][alarmNews.ObjectID].CriminalID
-            criminalData.Photo = vm.criminalList[0][alarmNews.ObjectID].Photo
-            vm.alarmList.unshift(criminalData)
 
-          /*限制报警条数不超过99*/
-            vm.alarmList.splice(99,99999999999)
-            vm.alarmText =  vm.alarmList[0].Description
-            vm.alarmPages = vm.alarmList.length
-          if (vm.alarmList.length != 0) {
-              vm.alertBJTK = true
-            } else {
-              vm.alertBJTK = false
-            }
+            $.ajax({
+              type: "get",
+              contentType: "application/json; charset=utf-8",
+              dataType: "jsonp",
+              jsonp: "callback",
+              async: false,
+              data:{
+                AreaID:localStorage.getItem("AreaID")
+              },
+              url: BasicUrl + 'CriminalCnt/GetBindCriminalsByArea',
+              success: function (result) {
+                console.log("ssssresultssssssss",result)
+                for (let i=0;i<result.length;i++){
+                  personIDs.push(result[i].FlnkID)
+                }
+                console.log("ssssssssssss",personIDs)
+                if(personIDs.indexOf(alarmNews.ObjectID)!=-1){
+                  var criminalData = alarmNews
+                  criminalData.criminalID = vm.criminalList[0][alarmNews.ObjectID].CriminalID
+                  criminalData.Photo = vm.criminalList[0][alarmNews.ObjectID].Photo
+                  vm.alarmList.unshift(criminalData)
+
+                  /*限制报警条数不超过99*/
+                  vm.alarmList.splice(99,99999999999)
+                  vm.alarmText =  vm.alarmList[0].Description
+                  vm.alarmPages = vm.alarmList.length
+                  if (vm.alarmList.length != 0) {
+                    vm.alertBJTK = true
+                  } else {
+                    vm.alertBJTK = false
+                  }
+
+                }
+
+
+
+              },
+              error: function (err) {
+                console.log(err)
+              }
+            })
+
+
           }
         }
 
@@ -1634,7 +1702,6 @@
           vm.movePeople=[]
           // 1、外出人数（监内）
           vm.FlnkIDList_1.length = 0
-          console.log(flowPerson_outPrison_rec)
           for (let i = 0; i<flowPerson_outPrison_rec[0].People.length; i++){
             vm.FlnkIDList_1.push(flowPerson_outPrison_rec[0].People[i].CriminalID)
             let runPeople={};
@@ -1746,18 +1813,17 @@
         if(JSON.parse(event.data).Header.MsgType === 51){
           var  chest_card = JSON.parse(JSON.parse(event.data).Body)
           var  wristband = JSON.parse(JSON.parse(event.data).Body)
+          console.log("wristband",wristband)
           //判断是胸卡
-
           if(chest_card.CardType === 0){
             if(vm.chest_card.length ===0){
-
               vm.chest_card.push({
                 RFID:chest_card.RFID,
                 CardID:chest_card.IC,
                 CardType:chest_card.CardType,
                 CriminalID:chest_card.CriminalID,
                 CriminalNum:vm.criminalList[0][chest_card.CriminalID].CriminalID,
-                status:false,
+                status:true,
                 CriminalName:vm.criminalList[0][chest_card.CriminalID].CriminalName,
                 Photo:vm.criminalList[0][chest_card.CriminalID].Photo,
                 wristband:''
@@ -1771,6 +1837,10 @@
                 }
               }
               if(flag == 1){
+
+                for(let i = 0; i<vm.chest_card.length; i++){
+                  vm.chest_card[i].status = false
+                }
                 vm.chest_card.push({
                   RFID:chest_card.RFID,
                   CardID:chest_card.IC,
@@ -1779,7 +1849,7 @@
                   CriminalNum:vm.criminalList[0][chest_card.CriminalID].CriminalID,
                   CriminalName:vm.criminalList[0][chest_card.CriminalID].CriminalName,
                   Photo:vm.criminalList[0][chest_card.CriminalID].Photo,
-                  status:false,
+                  status:true,
                   wristband:''
                 })
               }

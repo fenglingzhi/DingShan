@@ -3,6 +3,54 @@
     <el-col :span="1" style="height:10px"></el-col>
     <el-col :span="22">
       <div class="li4_parts">
+        <div class="alertTip alertYDMD" style="width: 1452px;height: 786px;" v-show="hisBand">
+          <div class="alertBody " style="margin: -330px -550px;width: 1100px;height: 660px;">
+            <div class="bodyHead"><div class="title">绑卡记录</div>
+              <select  style="position: absolute;margin: 9px -411px;font-size: 19px;background: none;border: none;" name="" id="">
+                <option v-on:click="selectDate(0)" selected="selected">1天内记录</option>
+                <option v-on:click="selectDate(1)">2天内记录</option>
+                <option v-on:click="selectDate(2)">3天内记录</option>
+                <option v-on:click="selectDate(3)">4天内记录</option>
+                <option v-on:click="selectDate(4)">5天内记录</option>
+                <option v-on:click="selectDate(5)">6天内记录</option>
+                <option v-on:click="selectDate(6)">7天内记录</option>
+              </select>
+              <div  class="close" v-on:click="hisBand=false">X</div>
+            </div>
+            <div class="bodyCon" style="height: 514px;" >
+              <table  border="2" cellspacing="0" width="100%">
+                <tr>
+                  <th>关联罪犯	</th>
+                  <th>点位号	</th>
+                  <th>IC卡号	</th>
+                  <th>操作民警	</th>
+                  <th>操作时间	</th>
+                  <th>操作地点	</th>
+                </tr>
+                <tr v-for="his in hisList" :key="1">
+                  <td>{{his.CriminalName}}</td>
+                  <td>{{his.PSID}}</td>
+                  <td>{{his.ICCard}}</td>
+                  <td>{{his.OperationPoliceName}}</td>
+                  <td>{{(his.ChangeTime==""||his.ChangeTime==null)?"":his.ChangeTime.replace("T"," ")}}</td>
+                  <td>{{his.CardAreaName}}</td>
+                </tr>
+              </table>
+            </div>
+            <!--<el-row >-->
+              <!--<el-col :span="8" style="height: 10px"></el-col>-->
+              <!--<el-col :span="8" >-->
+                <!--<div class="pages">-->
+                  <!--<span class="pageControl"><img src="../../assets/q1.png" v-on:click="getCriminalback()" alt=""/></span>-->
+                  <!--<span class="pagesText">{{criminalPage+1}}/{{Math.ceil(criminalCount/18)==0?1:Math.ceil(criminalCount/18)}}</span>-->
+                  <!--<span class="pageControl"><img src="../../assets/q2.png" v-on:click="getCriminalGo()" alt=""/></span>-->
+                <!--</div>-->
+              <!--</el-col>-->
+              <!--<el-col :span="8" style="height: 10px"></el-col>-->
+            <!--</el-row>-->
+          </div>
+        </div>
+
         <!--<div class="tabHead">-->
           <!--<div  :class="['tab', { tabing: isB1}]"  @click="bandCardInfo_onBind()">绑定</div>-->
           <!--<div  :class="['tab', { tabing: isB2}]"  @click="UnbandCardInfo_onUnBind()">解绑</div>-->
@@ -58,6 +106,8 @@
               <!--<input class="sureAble" value="提交解绑" type="button" @click="bandCardInfoUnbind()">-->
               <!--<input class="sureAble"  value="一键解绑" type="button" @click="bandCardUnbindAll()">-->
               <input class="sureAble"  value="取消" type="button" @click="BindCancel()">
+              <input class="sureAble" value="绑卡记录"  type="button" @click="hisShow()">
+
             </div>
           </div>
         </div>
@@ -70,7 +120,8 @@
 </template>
 
 <script>
-  import { ajaxUrl } from '../../config'
+  import { BasicUrl,IMG,ReceiveAjaxUrl,MapUrl,ajaxUrl } from '../../config'
+
 
   export default {
     name: 'navheader',
@@ -80,11 +131,15 @@
     ],
     data () {
       return {
+
         isUnbind:false,
         CardTitle:'卡绑定',
         isB1: true,
         isB2: false,
-        alertTip: ""
+        alertTip: "",
+
+        hisBand:false,
+        hisList:[]
 
       }
     },
@@ -186,6 +241,7 @@
           },
           Body: JSON.stringify({
             DoorID : vm.getLocalStorage('DoorID'),
+            PoliceID : localStorage.getItem('placemanID'),
             ChangeCardPeopleList:ChangeCardPeopleList
           })
         }
@@ -301,7 +357,6 @@
             vm.delDisable()
 
             if(result.RET === 1){
-//              alert('解除绑定成功')
               vm.alertTip="解除绑定成功"
               localStorage.setItem("moveTypes","0")
 
@@ -377,6 +432,53 @@
           }
         });
       },
+      /*历史记录*/
+      hisShow:function () {
+          var vm=this
+        this.hisBand=true
+        $.ajax({
+          type: "get",
+          contentType: "application/json; charset=utf-8",
+          dataType: "jsonp",
+          jsonp: "callback",
+          async: false,
+          data:{
+            AreaID:localStorage.getItem("AreaID"),
+            Type:4601,
+            Duration:0
+          },
+          url: BasicUrl + 'ChangeCard/GetChangeCardRecords',
+          success: function (result) {
+              console.log(result)
+            vm.hisList=result
+
+          }
+        })
+
+
+      },
+      selectDate:function (X) {
+        var vm=this
+        this.hisBand=true
+        $.ajax({
+          type: "get",
+          contentType: "application/json; charset=utf-8",
+          dataType: "jsonp",
+          jsonp: "callback",
+          async: false,
+          data:{
+            AreaID:localStorage.getItem("AreaID"),
+            Type:4601,
+            Duration:X
+          },
+          url: BasicUrl + 'ChangeCard/GetChangeCardRecords',
+          success: function (result) {
+            console.log(result)
+            vm.hisList=result
+
+          }
+        })
+      }
     },
     mounted () {
       var vm = this
@@ -529,5 +631,13 @@
   input,textarea:focus {
     outline: none;
   }
+
+
+  .pageControl{
+    font-size: 23px;
+    font-weight: 800;
+  }
+  .td{border:1px #0066ff solid;}
+  .table{border-collapse:collapse;}
 
 </style>

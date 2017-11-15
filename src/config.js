@@ -1,7 +1,7 @@
 // 配置baseurl
 // 接口地址
 /* 基础数据接口地址 */
-// export const BasicUrl = 'http://10.58.1.178:7704/api/'
+// export const BasicUrl = 'http://10.58.1.178:7706/api/'
 export const BasicUrl = 'http://'+window.location.host+'/api/'
 // export const BasicUrl = 'http://10.58.1.145:88/api/'
 $.ajax({
@@ -12,7 +12,6 @@ $.ajax({
   async: false,
   url:  BasicUrl+'HomeIndex/GetGateWayConfig' + "?callback=?",
   success: function (result) {
-    console.log(result)
     localStorage.setItem('IP',result[0].GateWayIP)
     localStorage.setItem('WebSocketPort',result[0].TcpReceivePort)
     localStorage.setItem('TcpPort',result[0].ReceivePort)

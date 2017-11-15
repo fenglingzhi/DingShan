@@ -79,8 +79,12 @@
                       <div class="map" v-on:click="closeTip()">
                         <img :src="positionMap" id="positionMap" width="" alt="" ref="abc">
                         <!--<img :src="mapPhoto" alt="" ref="abc">-->
-                        <div  v-for="(item,index) in criminalLists" :class="['point', {pointed: true}]"  @click.stop="select(index)"  :style="{top:item.CriminalY-20+'px',left:item.CriminalX+'px'}" >
+                        <div  v-for="(item,index) in criminalLists" v-show="item.pointShows" :class="['point', {pointed: true}]"  @click.stop="select(index)"  :style="{top:item.CriminalY+'px',left:item.CriminalX+'px'}" >
                           <img :src="item.pointImg" alt="">
+                          <div style="width: 100px;
+    text-align: center;
+    position: absolute;
+    margin: -61px -42px;">{{item.Name}}</div>
                           <div class="pointTop" v-show="item.status">
                             <el-col :span="10">
                               <img :src="item.CriminalPhoto" style="height: 140px;width: 100px;" alt="">
@@ -96,7 +100,7 @@
                         </div>
 
 
-                      <div class="personGroups" v-for="(item,index) in criminalGroups" :style="{top:item.CriminalY-20+'px',left:item.CriminalX+'px'}" @click.stop="selectGroups(index)" >
+                      <div class="personGroups" v-for="(item,index) in criminalGroups" :style="{top:item.CriminalY+'px',left:item.CriminalX+'px'}" @click.stop="selectGroups(index)" >
                           {{item.posMenu.length}}
                         <div style=" margin: -67px 37px;" v-show="item.status" >
                           <div class="personGroup" v-for="(item,personIndex) in item.posMenu[0]" @click.stop="selectPerson(index,personIndex)">
@@ -123,13 +127,12 @@
                     </el-row>
                   </el-row>
                   <div>
-                    <span style="font-size: 20px;color: black;font-weight: 700;">监区情况：</span>
+                    <span style="font-size: 20px;color: black;font-weight: 700;">当前区域：</span>
                     <span style="color:#d98900;font-size: 17px;font-weight:700"><span style="display: inline-block;width: 15px;height: 15px;border-radius: 100px;background: #d98900"></span>&nbsp;宽管：{{KGL}}人&nbsp;&nbsp;</span>　
                     <span style="color:#ff0000;font-size: 17px;font-weight:700"><span style="display: inline-block;width: 15px;height: 15px;border-radius: 100px;background: #ff0000"></span>&nbsp;严管：{{YGL}}人&nbsp;&nbsp;</span>　
                     <span style="color:#00b322;font-size: 17px;font-weight:700"><span style="display: inline-block;width: 15px;height: 15px;border-radius: 100px;background: #00b322"></span>&nbsp;普管：{{PGL}}人&nbsp;&nbsp;</span>　
                     <span style="color:#fa00d4;font-size: 17px;font-weight:700"><span style="display: inline-block;width: 15px;height: 15px;border-radius: 100px;background: #fa00d4"></span>&nbsp;考察：{{KCL}}人&nbsp;&nbsp;</span>
                     <span style="color:#020508;font-size: 17px;font-weight:700"><span style="display: inline-block;width: 15px;height: 15px;border-radius: 100px;background: rgba(73,158,250,0)"></span>&nbsp;总共人数：{{KCL+PGL+YGL+KGL}}人&nbsp;&nbsp;</span>
-
                   </div>
                 </el-col>
                 <el-col :span="1" style="height:10px;">
@@ -165,6 +168,8 @@
 
     data () {
       return {
+        mergePoints:[],
+        prisonSelectText:"",
         getGroupSet:'',
         isOpenGroup:1,
         criminalGroups:'',
@@ -428,12 +433,18 @@
 
       selectMap:function (index) {
         let vm = this
+        vm.KGL=0
+        vm.YGL=0
+        vm.PGL=0
+        vm.KCL=0
+
         for(let i = 0; i<vm.allMapLists.length; i++){
           vm.allMapLists[i].status = false
         }
         vm.allMapLists[index].status= true
         vm.positionMap=vm.allMapLists[index].MapUrl
         vm.MapID=vm.allMapLists[index].MapFlnkID
+        vm.prisonSelectText=vm.allMapLists[index].AreaName
         vm.pointS()
       },
       /*缩放地图*/
@@ -499,6 +510,7 @@
               }
 
               vm.criminalLists.push({
+                pointShows:true,
                 PSID:result[i].PSID.toLowerCase(),
                 Name:vm.personBand[0][result[i].PSID.toLowerCase()].Name,
                 PersonID:vm.personBand[0][result[i].PSID.toLowerCase()].PersonID,
@@ -590,6 +602,7 @@
               }
 
               vm.criminalLists.push({
+                pointShows:true,
                 PSID:result[i].PSID.toLowerCase(),
                 Name:vm.personBand[0][result[i].PSID.toLowerCase()].Name,
                 PersonID:vm.personBand[0][result[i].PSID.toLowerCase()].PersonID,
@@ -662,7 +675,6 @@
           url: ajaxUrl,
           data:JSON.stringify(sendMessage),
           success: function (result) {
-            console.log("result",result)
             var ps1=[]
             var ps2=[]
             for(let m=0;m<result.length;m++){
@@ -735,7 +747,7 @@
       getGroupPoints(){
         var vm=this
         var positionData=vm.criminalLists
-        console.log("positionData",positionData)
+//        console.log("positionData",positionData)
         var mergePointOffset=0
         var mergePointCollection = JSON.parse(JSON.stringify(positionData));
         for (var i = 0; i < mergePointCollection.length; i++) {
@@ -747,6 +759,8 @@
               if (mergePointCollection[j].isTotal == undefined && mergePointCollection[j].CriminalX >= (curDivPos.CriminalX - mergePointOffset) && mergePointCollection[j].CriminalX <= (curDivPos.CriminalX + mergePointOffset)
                 && mergePointCollection[j].CriminalY >= (curDivPos.CriminalY - mergePointOffset) && mergePointCollection[j].CriminalY <= (curDivPos.CriminalY + mergePointOffset)) {
                 divTotal += 1;
+                vm.criminalLists[j].pointShow=false
+
                 mergePointCollection[j].isTotal = 1;
                 var kk=[]
                 for(var k=0;k<mergePointCollection.length;k++){
@@ -766,9 +780,19 @@
                   }
                 }
                 posMenu.push(kk);
+
               }
             }
             if (divTotal > 2) {
+              for (let m=0;m<vm.criminalLists.length;m++){
+                for (let b=0;b<posMenu[0].length;b++){
+                  if(posMenu[0][b].PersonID==vm.criminalLists[m].PersonID){
+                    vm.criminalLists[m].pointShows=false;
+                    break;
+                  }
+                }
+//                vm.criminalLists[m].pointShows=true;
+              }
               if (curDivPos.isTotal == undefined) {
                 curDivPos = $.extend(curDivPos, { "isTotal": divTotal });
               }
@@ -791,7 +815,6 @@
           }
         }
         vm.criminalGroups=realData
-
 
       }
     },
@@ -826,6 +849,7 @@
             }
           }
           vm.allMapLists=allMapList
+          vm.prisonSelectText=vm.allMapLists[0].AreaName
 //          console.log("allMapList",allMapList)
         },
         error: function (err) {

@@ -241,7 +241,7 @@
           },
           Body: JSON.stringify({
             DoorID : vm.getLocalStorage('DoorID'),
-            PoliceID : localStorage.getItem('placemanID'),
+            PoliceID : localStorage.getItem('BindplacemanID'),
             ChangeCardPeopleList:ChangeCardPeopleList
           })
         }
@@ -639,5 +639,6 @@
   }
   .td{border:1px #0066ff solid;}
   .table{border-collapse:collapse;}
+  tr:nth-child(2n){background:#cac9c6;}
 
 </style>

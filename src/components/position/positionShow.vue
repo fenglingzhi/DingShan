@@ -77,6 +77,7 @@
                   <el-row >
                     <el-row style="overflow: hidden;height: 632px;margin: 18px 4px;width:1025px;">
                       <div class="map" v-on:click="closeTip()">
+                        <!--{{criminalLists}}-->
                         <img :src="positionMap" id="positionMap" width="" alt="" ref="abc">
                         <!--<img :src="mapPhoto" alt="" ref="abc">-->
                         <div  v-for="(item,index) in criminalLists" v-show="item.pointShows" :class="['point', {pointed: true}]"  @click.stop="select(index)"  :style="{top:item.CriminalY+'px',left:item.CriminalX+'px'}" >
@@ -171,7 +172,7 @@
         mergePoints:[],
         prisonSelectText:"",
         getGroupSet:'',
-        isOpenGroup:1,
+        isOpenGroup:1,//重合人员是否展开
         criminalGroups:'',
         ipImg:"",
         searchModeShow:false,
@@ -236,10 +237,11 @@
           url: ajaxUrl,
           data:JSON.stringify(sendMessage),
           success: function (result) {
-//              console.log(vm.personBand,result)
             if(result.MapID !="00000000-0000-0000-0000-000000000000"){
             clearInterval(vm.getMapAct)
-            vm.criminalLists=[]
+              clearInterval(vm.getGroupSet)
+              vm.criminalGroups=[]
+              vm.criminalLists=[]
             vm.positionMap=MapUrl+vm.mapList[0][result.MapID].MapUrl
               var ManageLevels=vm.personBand[0][result.PSID.toLowerCase()].ManageLevel
               var pointImg="";
@@ -260,6 +262,7 @@
                 ManageLevelName:vm.personBand[0][result.PSID.toLowerCase()].ManageLevelName,
                 CriminalPhoto:vm.personBand[0][result.PSID.toLowerCase()].Photo,
                 status:true,
+                pointShows:true,
                 ManageLevel:vm.personBand[0][result.PSID.toLowerCase()].ManageLevel,
                 CriminalX:result.X,
                 CriminalY:result.Y,
@@ -278,6 +281,7 @@
           },
           complete: function (XHR) {
             XHR = null;  //回收资源
+
           }
         });
 
@@ -550,9 +554,18 @@
 
 
             vm.getGroupPoints()
+           vm.getGroupSet=setInterval(function () {
+           if(vm.isOpenGroup==1){
+           vm.getGroupPoints()
+            }
+           },2000)
 
           },
           complete: function (XHR) {
+              if(vm.getMapAct){
+                  clearInterval(vm.getMapAct);
+                  vm.getMapAct=null;
+              }
             vm.getMapAct=setInterval(function () {
               vm.pointShow()
             },1000)
@@ -823,9 +836,9 @@
       let vm = this
 
 
-      vm.ipImg='http://'+window.location.host+'/dist/static/'
+//      vm.ipImg='http://'+window.location.host+'/dist/static/'
 //      vm.ipImg='../../static/'
-//      vm.ipImg='http://10.58.1.178:7704/dist/static/'
+      vm.ipImg='http://10.58.1.178:7704/dist/static/'
       scaleNum=1
       $.ajax({
         type: "get",
@@ -864,11 +877,11 @@
 //        scaleNum=1020/$("#positionMap").width()
 //        vm.changeSize("0")
 //      },1000)
-     vm.getGroupSet=setInterval(function () {
-         if(vm.isOpenGroup==1){
-           vm.getGroupPoints()
-         }
-      },2000)
+//     vm.getGroupSet=setInterval(function () {
+//         if(vm.isOpenGroup==1){
+//           vm.getGroupPoints()
+//         }
+//      },2000)
       $(".map").draggable();
 
       /*获取监区信息，用于左侧地图选择*/
@@ -1103,8 +1116,8 @@
     z-index: 9999;
   }
   .slc{
-    /*width: 32px;*/
-    /*height: 33px;*/
+    width: 34px;
+    height: 34px;
     /*line-height: 32px;*/
     /*border-radius: 99px;*/
     /*font-size: 35px;*/

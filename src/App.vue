@@ -1806,6 +1806,8 @@
           var  placeman_card = JSON.parse(JSON.parse(event.data).Body).PoliceID
           vm.alertYHDL = false
           localStorage.setItem('placemanID',placeman_card)
+          localStorage.setItem('BindplacemanID',placeman_card)
+
           vm.delDisabled()
         }
 

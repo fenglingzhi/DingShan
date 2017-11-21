@@ -25,6 +25,7 @@
                   <th>IC卡号	</th>
                   <th>操作民警	</th>
                   <th>操作时间	</th>
+                  <th>解绑类型	</th>
                   <th>操作地点	</th>
                 </tr>
                 <tr v-for="his in hisList" :key="1">
@@ -33,6 +34,7 @@
                   <td>{{his.ICCard}}</td>
                   <td>{{his.OperationPoliceName}}</td>
                   <td>{{(his.ChangeTime==""||his.ChangeTime==null)?"":his.ChangeTime.replace("T"," ")}}</td>
+                  <td>{{his.BindTypeName}}</td>
                   <td>{{his.CardAreaName}}</td>
                 </tr>
               </table>
@@ -295,7 +297,7 @@
           },
           Body: JSON.stringify({
             DoorID : vm.getLocalStorage('DoorID'),
-            PoliceID : localStorage.getItem('placemanID'),
+            PoliceID : localStorage.getItem('BindplacemanID'),
             RegType:4603
           })
         }
@@ -339,7 +341,7 @@
             },
             Body: JSON.stringify({
               DoorID : vm.getLocalStorage('DoorID'),
-              PoliceID : localStorage.getItem('placemanID'),
+              PoliceID : localStorage.getItem('BindplacemanID'),
               UnBundingList:UnBundingList
             })
           }
@@ -394,7 +396,7 @@
           },
           Body: JSON.stringify({
             DoorID : vm.getLocalStorage('DoorID'),
-            Police: localStorage.getItem('placemanID'),
+            Police: localStorage.getItem('BindplacemanID'),
             RegType:4602
           })
         }
@@ -446,7 +448,7 @@
           async: false,
           data:{
             AreaID:localStorage.getItem("AreaID"),
-            Type:4603,
+            Type:"4603,4602",
             Duration:0
           },
           url: BasicUrl + 'ChangeCard/GetChangeCardRecords',
@@ -634,5 +636,5 @@
   }
 
 
-
+  tr:nth-child(2n){background:#cac9c6;}
 </style>
